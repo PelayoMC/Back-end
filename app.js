@@ -1,13 +1,21 @@
 // Requires (librerias)
 var express = require('express');
 var mongoose = require('mongoose');
+var bodyParser = require('body-parser');
+// Requires (rutas)
+var appRoute = require('./routes/app');
+var userRoute = require('./routes/usuario');
 
 // Inicializar vbls
 var app = express();
 
+// Body parser
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Conexion a la bbdd
-mongoose.connection.openUri('mongodb://UO250985:tfgUO250985@ds227654.mlab.com:27654/tfgdatabase', (err, res) => {
+mongoose.connection.openUri('mongodb://UO250985:tfgUO250985@ds227654.mlab.com:27654/tfgdatabase', { useNewUrlParser: true, useUnifiedTopology: true }, (err, res) => {
     if (err) {
         throw err;
     } else {
@@ -19,22 +27,11 @@ mongoose.connection.openUri('mongodb://UO250985:tfgUO250985@ds227654.mlab.com:27
 // Setters
 app.set('port', 3000);
 
-
 // Rutas
-app.get('/', (req, res, next) => {
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Peticion realizada correctamente'
-    });
-});
-
+app.use('/usuario', userRoute);
+app.use('/', appRoute);
 
 // Escuchar peticiones
-//var db = mongoose.connection;
-//db.on('error', console.error.bind(console, 'connection error:'));
-//db.once('open', function() {
-//    console.log("CONECTADO");
-//});
 app.listen(app.get('port'), () => {
     console.log("Servidor activo en el puerto " + app.get('port') + ' \x1b[32m%s\x1b[0m', '[ONLINE]');
 });
