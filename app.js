@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 // Requires (rutas)
 var appRoute = require('./routes/app');
 var userRoute = require('./routes/usuario');
+var loginRoute = require('./routes/login');
 
 // Inicializar vbls
 var app = express();
@@ -29,6 +30,7 @@ app.set('port', 3000);
 
 // Rutas
 app.use('/usuario', userRoute);
+app.use('/login', loginRoute);
 app.use('/', appRoute);
 
 // Escuchar peticiones
