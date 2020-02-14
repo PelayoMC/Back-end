@@ -1,7 +1,5 @@
 var express = require('express');
 var bcrypt = require('bcryptjs');
-var jsonwt = require('jsonwebtoken');
-var SEED = require('../config/config').SEED;
 var middleware = require('../middlewares/autenticacion');
 var app = express();
 
