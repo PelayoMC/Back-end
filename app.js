@@ -8,6 +8,7 @@ var userRoute = require('./routes/usuario');
 var recipeRoute = require('./routes/receta');
 var loginRoute = require('./routes/login');
 var searchRoute = require('./routes/busqueda');
+var uploadRoute = require('./routes/upload');
 
 // Inicializar vbls
 var app = express();
@@ -34,6 +35,7 @@ app.use('/usuario', userRoute);
 app.use('/login', loginRoute);
 app.use('/receta', recipeRoute);
 app.use('/busqueda', searchRoute);
+app.use('/upload', uploadRoute);
 app.use('/', appRoute);
 
 // Escuchar peticiones
