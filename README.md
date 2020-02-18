@@ -6,6 +6,7 @@ Modulos necesarios:
 - Bcrypt (`npm install bcryptjs --save`)
 - Body-parser (`npm install body-parser --save`)
 - JSonWebToken (`npm install jsonwebtoken --save`)
+- Express-fileupload (`npm install --save express-fileupload`)
 
 Arranque del servidor:
 [ npm start ]
