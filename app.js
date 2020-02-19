@@ -6,6 +6,8 @@ var bodyParser = require('body-parser');
 var appRoute = require('./routes/app');
 var userRoute = require('./routes/usuario');
 var recipeRoute = require('./routes/receta');
+var ingredientRoute = require('./routes/ingrediente');
+var intoleranceRoute = require('./routes/intolerancia');
 var loginRoute = require('./routes/login');
 var searchRoute = require('./routes/busqueda');
 var uploadRoute = require('./routes/upload');
@@ -32,8 +34,10 @@ app.set('port', 3000);
 
 // Rutas
 app.use('/usuario', userRoute);
-app.use('/login', loginRoute);
 app.use('/receta', recipeRoute);
+app.use('/ingrediente', ingredientRoute);
+app.use('/intolerancia', intoleranceRoute);
+app.use('/login', loginRoute);
 app.use('/busqueda', searchRoute);
 app.use('/upload', uploadRoute);
 app.use('/', appRoute);

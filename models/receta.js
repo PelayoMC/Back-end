@@ -2,12 +2,6 @@ var mongoose = require('mongoose');
 var uniqueValidator = require('mongoose-unique-validator');
 var Schema = mongoose.Schema;
 
-
-var UnidadesValidas = {
-    values: ['cal', 'kcal', 'g', 'kg', 'ml', 'l', 'Al gusto', ''],
-    message: '{VALUE} no es una unidad permitida'
-};
-
 var NivelesValidos = {
     values: ['Muy facil', 'Facil', 'Intermedio', 'Dificil', 'Muy dificil'],
     message: '{VALUE} no es un nivel permitido'
@@ -18,9 +12,9 @@ var recetaSchema = new Schema({
     descripcion: { type: String, required: [true, 'Descripción obligatoria'] },
     ingredientes: {
         type: [{
-            nombre: { type: String, required: [true, 'Nombre de ingrediente obligatorio'] },
+            id: { type: Schema.Types.ObjectId, ref: 'Ingrediente' },
             cantidad: { type: Number, required: [true, 'Cantidad de ingrediente obligatoria'] },
-            unidades: { type: String, required: [true, 'Unidades obligatorias'], enum: UnidadesValidas },
+            unidades: { type: String, required: [true, 'Unidades obligatorias'] }
         }],
         required: [true, 'Ingredientes obligatorios']
     },
@@ -29,7 +23,7 @@ var recetaSchema = new Schema({
     calorias: {
         type: {
             cantidad: { type: Number, required: [true, 'Cantidad obligatoria'] },
-            unidades: { type: String, required: [true, 'Unidades obligatorias'], enum: UnidadesValidas },
+            unidades: { type: String, required: [true, 'Unidades obligatorias'] },
         },
         required: [true, 'Pasos obligatorios']
     },

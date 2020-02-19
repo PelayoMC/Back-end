@@ -1,11 +1,14 @@
 var express = require('express');
 var fileupload = require('express-fileupload');
+var fs = require('fs');
 var app = express();
 
 app.use(fileupload());
 
 var extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
 var coleccionesValidas = ['usuarios', 'recetas', 'ingredientes', 'intolerancias'];
+var Usuario = require('../models/usuario');
+var Receta = require('../models/receta');
 
 app.put('/:tipo/:id', (req, res, next) => {
 
@@ -35,7 +38,7 @@ app.put('/:tipo/:id', (req, res, next) => {
     var extension = nombreCortado[nombreCortado.length - 1];
 
     // Extensiones aceptadas
-    if (extensionesValidas.indexOf(extension) < 0) {
+    if (extensionesValidas.indexOf(extension.toLowerCase()) < 0) {
         return res.status(400).json({
             ok: false,
             mensaje: 'Extensión no válida',
@@ -55,13 +58,52 @@ app.put('/:tipo/:id', (req, res, next) => {
                 errors: err
             });
         }
-        res.status(200).json({
-            ok: true,
-            mensaje: 'Archivo subido al servidor',
-            filePath: path,
-            extension: extension
-        });
+
+        uploadTipo(tipo, id, nombreArchivo, res);
+
     });
 });
+
+function uploadTipo(collecion, id, nombreArchivo, res) {
+    switch (collecion) {
+        case 'usuarios':
+            Usuario.findById(id, (err, usuarioEncontrado) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error al encontrar al usuario',
+                        errors: err
+                    });
+                }
+                var antiguoPath = './uploads/usuarios/' + usuarioEncontrado.imagen;
+                // Si existe una imagen previamente, la elimina
+                if (fs.existsSync(antiguoPath)) {
+                    fs.unlink(antiguoPath, (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+                usuarioEncontrado.imagen = nombreArchivo;
+                usuarioEncontrado.save((err, usuarioActualizado) => {
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            mensaje: 'Error al actualizar la imagen al usuario',
+                            errors: err
+                        });
+                    }
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Imagen de usuario actualizada',
+                        usuario: usuarioActualizado
+                    });
+                });
+            });
+            break;
+        case 'recetas':
+            break;
+    }
+}
 
 module.exports = app;
