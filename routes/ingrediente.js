@@ -66,16 +66,16 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 });
 
 // Añadir
-app.post('/', middleware.verificaToken, (req, res) => {
+app.post('/', (req, res) => {
     var body = req.body;
 
-    var Ingrediente = new Ingrediente({
+    var ingrediente = new Ingrediente({
         nombre: body.nombre,
         tipo: body.tipo,
         ingredienteSustituible: body.ingredienteSustituible
     });
 
-    Ingrediente.save((err, ingredienteGuardado) => {
+    ingrediente.save((err, ingredienteGuardado) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -86,7 +86,7 @@ app.post('/', middleware.verificaToken, (req, res) => {
         res.status(201).json({
             ok: true,
             mensaje: 'Ingrediente guardado',
-            Ingrediente: ingredienteGuardado,
+            ingrediente: ingredienteGuardado,
             usuarioToken: req.usuario
         });
     });

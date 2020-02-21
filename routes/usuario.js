@@ -11,7 +11,7 @@ var Usuario = require('../models/usuario');
 // ================================================
 app.get('/', (req, res, next) => {
 
-    Usuario.find({}, 'nombre email imagen rol').exec(
+    Usuario.find({}, 'nombre email imagen rol recetasFavoritas').exec(
         (err, users) => {
             if (err) {
                 return res.status(500).json({
@@ -57,6 +57,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         usuarioEncontrado.nombre = body.nombre;
         usuarioEncontrado.email = body.email;
         usuarioEncontrado.rol = body.rol;
+        usuarioEncontrado.recetasFavoritas = body.recetasFavoritas;
 
         usuarioEncontrado.save((err, usuarioGuardado) => {
             if (err) {
@@ -87,7 +88,8 @@ app.post('/', middleware.verificaToken, (req, res) => {
         email: body.email,
         contraseña: bcrypt.hashSync(body.contraseña, 10),
         imagen: body.imagen,
-        rol: body.rol
+        rol: body.rol,
+        recetasFavoritas: body.recetasFavoritas
     });
 
     usuario.save((err, usuarioGuardado) => {

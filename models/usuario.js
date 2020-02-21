@@ -12,7 +12,13 @@ var usuarioSchema = new Schema({
     email: { type: String, unique: true, required: [true, 'Email obligatorio'] },
     contraseña: { type: String, required: [true, 'Contraseña obligatoria'] },
     imagen: { type: String, required: false, default: null },
-    rol: { type: String, required: true, default: "USER", enum: rolesValidos }
+    rol: { type: String, required: true, default: "USER", enum: rolesValidos },
+    recetasFavoritas: {
+        type: [{
+            id: { type: Schema.Types.ObjectId, ref: 'Receta' }
+        }],
+        required: false
+    }
 });
 
 usuarioSchema.plugin(uniqueValidator, { message: '[{PATH}] debe ser único' });
