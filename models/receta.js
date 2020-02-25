@@ -28,6 +28,7 @@ var recetaSchema = new Schema({
         required: [true, 'Pasos obligatorios']
     },
     nivel: { type: String, required: [true, 'Nivel obligatorio'], enum: NivelesValidos },
+    creador: { type: Schema.Types.ObjectId, ref: 'Usuario' }
 }, { collection: 'recetas' });
 
 recetaSchema.plugin(uniqueValidator, { message: '[{PATH}] debe ser único' });

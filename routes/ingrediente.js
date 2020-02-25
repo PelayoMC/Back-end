@@ -46,9 +46,24 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 
         ingredienteEncontrado.nombre = body.nombre;
         ingredienteEncontrado.tipo = body.tipo;
-        IngredienteEncontrado.ingredienteSustituible = body.ingredienteSustituible;
 
-        IngredienteEncontrado.save((err, ingredienteGuardado) => {
+        Ingrediente.findById(body.ingredienteSustituible, (err, ingredienteRelEncontrado) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error al encontrar el ingrediente',
+                    errors: err
+                });
+            }
+            if (!ingredienteRelEncontrado) {
+                ingredienteEncontrado.ingredienteSustituible = null;
+            } else {
+                ingredienteEncontrado.ingredienteSustituible = ingredienteRelEncontrado;
+            }
+        });
+
+        ingredienteEncontrado.creador = req.usuario;
+        ingredienteEncontrado.save((err, ingredienteGuardado) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -66,13 +81,14 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 });
 
 // Añadir
-app.post('/', (req, res) => {
+app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
 
     var ingrediente = new Ingrediente({
         nombre: body.nombre,
         tipo: body.tipo,
-        ingredienteSustituible: body.ingredienteSustituible
+        ingredienteSustituible: body.ingredienteSustituible,
+        creador: req.usuario
     });
 
     ingrediente.save((err, ingredienteGuardado) => {
@@ -87,7 +103,7 @@ app.post('/', (req, res) => {
             ok: true,
             mensaje: 'Ingrediente guardado',
             ingrediente: ingredienteGuardado,
-            usuarioToken: req.usuario
+            usuario: req.usuario.email
         });
     });
 });
@@ -97,7 +113,7 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
 
     Ingrediente.findByIdAndRemove(id, { useFindAndModify: false }, (err, ingredienteBorrado) => {
-        if (!IngredienteBorrada) {
+        if (!ingredienteBorrado) {
             return res.status(400).json({
                 ok: false,
                 mensaje: 'El ingrediente con el id: [' + id + '] no existe',

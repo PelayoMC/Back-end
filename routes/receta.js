@@ -28,8 +28,8 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
     var body = req.body;
 
-    Receta.findById(id, (err, recetaEncontrado) => {
-        if (!recetaEncontrado) {
+    Receta.findById(id, (err, recetaEncontrada) => {
+        if (!recetaEncontrada) {
             return res.status(400).json({
                 ok: false,
                 mensaje: 'La receta con el id: [' + id + '] no existe',
@@ -44,13 +44,14 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
             });
         }
 
-        recetaEncontrado.nombre = body.nombre;
-        recetaEncontrado.descripcion = body.descripcion;
-        recetaEncontrado.ingredientes = body.ingredientes;
-        recetaEncontrado.imagen = body.imagen;
-        recetaEncontrado.pasos = body.pasos;
-        recetaEncontrado.calorias = body.calorias;
-        recetaEncontrado.nivel = body.nivel;
+        recetaEncontrada.nombre = body.nombre;
+        recetaEncontrada.descripcion = body.descripcion;
+        recetaEncontrada.ingredientes = body.ingredientes;
+        recetaEncontrada.imagen = body.imagen;
+        recetaEncontrada.pasos = body.pasos;
+        recetaEncontrada.calorias = body.calorias;
+        recetaEncontrada.nivel = body.nivel;
+        recetaEncontrada.creador = req.usuario;
 
         recetaEncontrado.save((err, recetaGuardada) => {
             if (err) {
@@ -80,7 +81,8 @@ app.post('/', middleware.verificaToken, (req, res) => {
         imagen: body.imagen,
         pasos: body.pasos,
         calorias: body.calorias,
-        nivel: body.nivel
+        nivel: body.nivel,
+        creador: req.usuario
     });
 
     receta.save((err, recetaGuardada) => {
@@ -95,7 +97,7 @@ app.post('/', middleware.verificaToken, (req, res) => {
             ok: true,
             mensaje: 'Receta guardada',
             receta: recetaGuardada,
-            usuarioToken: req.usuario
+            usuario: req.usuario.email
         });
     });
 });

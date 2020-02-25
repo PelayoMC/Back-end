@@ -1,8 +1,10 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
+var mongoose = require('mongoose');
 var app = express();
 
 var Intolerancia = require('../models/intolerancia');
+var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
     Intolerancia.find({}, (err, intolerancias) => {
@@ -47,7 +49,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         intoleranciaEncontrada.nombre = body.nombre;
         intoleranciaEncontrada.ingredientes = body.ingredientes;
 
-        IntoleranciaEncontrada.save((err, intoleranciaGuardada) => {
+        intoleranciaEncontrada.save((err, intoleranciaGuardada) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -67,29 +69,45 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
+    var ids = req.body.ingredientes;
 
-    var Intolerancia = new Intolerancia({
-        nombre: body.nombre,
-        ingredientes: body.ingredientes
-    });
+    ids = ids.map(id => mongoose.Types.ObjectId(id));
 
-    Intolerancia.save((err, intoleranciaGuardada) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'Error al crear la intolerancia',
-                errors: err
+    obtenerIngredientes(ids).then(ings => {
+        var intolerancia = new Intolerancia({
+            nombre: body.nombre,
+            ingredientes: ings
+        });
+        intolerancia.save((err, intoleranciaGuardada) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al crear la intolerancia',
+                    errors: err
+                });
+            }
+            res.status(201).json({
+                ok: true,
+                mensaje: 'Intolerancia guardada',
+                intolerancia: intoleranciaGuardada,
+                usuarioToken: req.usuario.email
             });
-        }
-        res.status(201).json({
-            ok: true,
-            mensaje: 'Intolerancia guardada',
-            intolerancia: intoleranciaGuardada,
-            usuarioToken: req.usuario
         });
     });
 });
 
+function obtenerIngredientes(ids) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.find({
+            '_id': { $in: ids }
+        }).exec((err, ingredientesInt) => {
+            if (err) {
+                reject('Error cargando los ingredientes', err);
+            }
+            resolve(ingredientesInt);
+        });
+    });
+}
 
 app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
