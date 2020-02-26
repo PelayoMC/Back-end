@@ -1,8 +1,10 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
+var mongoose = require('mongoose');
 var app = express();
 
 var Receta = require('../models/receta');
+var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
     Receta.find({}, (err, recetas) => {
@@ -73,34 +75,59 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
+    var ids = req.body.ingredientes;
 
-    var receta = new Receta({
-        nombre: body.nombre,
-        descripcion: body.descripcion,
-        ingredientes: body.ingredientes,
-        imagen: body.imagen,
-        pasos: body.pasos,
-        calorias: body.calorias,
-        nivel: body.nivel,
-        creador: req.usuario
-    });
-
-    receta.save((err, recetaGuardada) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'Error al crear la receta',
-                errors: err
-            });
+    obtenerIngredientes(ids).then(ings => {
+        var ingredientes = [];
+        for (let i = 0; i < ings.length; i++) {
+            var ing = {
+                "ingrediente": ings[i],
+                "cantidad": ids[i].cantidad,
+                "unidades": ids[i].unidades
+            };
+            ingredientes.push(ing);
         }
-        res.status(201).json({
-            ok: true,
-            mensaje: 'Receta guardada',
-            receta: recetaGuardada,
-            usuario: req.usuario.email
+        var receta = new Receta({
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            ingredientes: ingredientes,
+            imagen: body.imagen,
+            pasos: body.pasos,
+            calorias: body.calorias,
+            nivel: body.nivel,
+            creador: req.usuario
+        });
+
+        receta.save((err, recetaGuardada) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al crear la receta',
+                    errors: err
+                });
+            }
+            res.status(201).json({
+                ok: true,
+                mensaje: 'Receta guardada',
+                receta: recetaGuardada,
+                usuario: req.usuario.email
+            });
         });
     });
 });
+
+function obtenerIngredientes(ids) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.find({
+            '_id': { $in: ids }
+        }).exec((err, ingredientesInt) => {
+            if (err) {
+                reject('Error cargando los ingredientes', err);
+            }
+            resolve(ingredientesInt);
+        });
+    });
+}
 
 
 app.delete('/:id', middleware.verificaToken, (req, res) => {

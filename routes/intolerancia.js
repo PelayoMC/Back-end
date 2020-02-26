@@ -7,7 +7,7 @@ var Intolerancia = require('../models/intolerancia');
 var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
-    Intolerancia.find({}, (err, intolerancias) => {
+    Intolerancia.find({}).exec((err, intolerancias) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
