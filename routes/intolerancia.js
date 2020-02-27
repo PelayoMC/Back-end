@@ -7,21 +7,30 @@ var Intolerancia = require('../models/intolerancia');
 var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
-    Intolerancia.find({}).exec((err, intolerancias) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                mensaje: 'Error cargando intolerancias',
-                errors: err
-            });
-        } else {
-            res.status(200).json({
-                ok: true,
-                mensaje: 'Intolerancias',
-                intolerancias: intolerancias
-            });
-        }
-    });
+    var desde = req.query.from || 0;
+    desde = Number(desde);
+
+    Intolerancia.find({})
+        .skip(desde)
+        .limit(5)
+        .exec((err, intolerancias) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando intolerancias',
+                    errors: err
+                });
+            } else {
+                Intolerancia.count({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Intolerancias',
+                        intolerancias: intolerancias,
+                        total
+                    });
+                });
+            }
+        });
 });
 
 // Modificar

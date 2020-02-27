@@ -5,21 +5,30 @@ var app = express();
 var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
-    Ingrediente.find({}, (err, ingredientes) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                mensaje: 'Error cargando ingredientes',
-                errors: err
-            });
-        } else {
-            res.status(200).json({
-                ok: true,
-                mensaje: 'Ingredientes',
-                ingredientes: ingredientes
-            });
-        }
-    });
+    var desde = req.query.from || 0;
+    desde = Number(desde);
+
+    Ingrediente.find({})
+        .skip(desde)
+        .limit(5)
+        .exec((err, ingredientes) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando ingredientes',
+                    errors: err
+                });
+            } else {
+                Ingrediente.count({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Ingredientes',
+                        ingredientes: ingredientes,
+                        total
+                    });
+                });
+            }
+        });
 });
 
 // Modificar

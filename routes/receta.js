@@ -7,21 +7,30 @@ var Receta = require('../models/receta');
 var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
-    Receta.find({}, (err, recetas) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                mensaje: 'Error cargando recetas',
-                errors: err
-            });
-        } else {
-            res.status(200).json({
-                ok: true,
-                mensaje: 'Recetas',
-                recetas: recetas
-            });
-        }
-    });
+    var desde = req.query.from || 0;
+    desde = Number(desde);
+
+    Receta.find({})
+        .skip(desde)
+        .limit(5)
+        .exec((err, recetas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando recetas',
+                    errors: err
+                });
+            } else {
+                Receta.count({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Recetas',
+                        recetas: recetas,
+                        total
+                    });
+                });
+            }
+        });
 });
 
 // Modificar

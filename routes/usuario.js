@@ -10,23 +10,31 @@ var Usuario = require('../models/usuario');
 // (GET) Obtener listado de usuarios
 // ================================================
 app.get('/', (req, res, next) => {
+    var desde = req.query.from || 0;
+    desde = Number(desde);
 
-    Usuario.find({}, 'nombre email imagen rol recetasFavoritas').exec(
-        (err, users) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error cargando usuarios',
-                    errors: err
-                });
-            } else {
-                res.status(200).json({
-                    ok: true,
-                    mensaje: 'Usuarios',
-                    usuarios: users
-                });
-            }
-        })
+    Usuario.find({}, 'nombre email imagen rol recetasFavoritas')
+        .skip(desde)
+        .limit(5)
+        .exec(
+            (err, users) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando usuarios',
+                        errors: err
+                    });
+                } else {
+                    Usuario.count({}, (err, total) => {
+                        res.status(200).json({
+                            ok: true,
+                            mensaje: 'Usuarios',
+                            usuarios: users,
+                            total
+                        });
+                    });
+                }
+            });
 });
 
 
