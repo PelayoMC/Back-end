@@ -7,6 +7,7 @@ Modulos necesarios:
 - Body-parser (`npm install body-parser --save`)
 - JSonWebToken (`npm install jsonwebtoken --save`)
 - Express-fileupload (`npm install --save express-fileupload`)
+- Google Auth (`npm install google-auth-library --save`)
 
 Arranque del servidor:
 [ npm start ]

@@ -13,6 +13,7 @@ var usuarioSchema = new Schema({
     contraseña: { type: String, required: [true, 'Contraseña obligatoria'] },
     imagen: { type: String, required: false, default: null },
     rol: { type: String, required: true, default: "USER", enum: rolesValidos },
+    google: { type: Boolean, default: false },
     recetasFavoritas: {
         type: [{
             id: { type: Schema.Types.ObjectId, ref: 'Receta' }
