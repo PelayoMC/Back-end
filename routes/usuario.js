@@ -88,7 +88,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // ================================================
 // (POST) Añadir nuevo usuario
 // ================================================
-app.post('/', middleware.verificaToken, (req, res) => {
+app.post('/', (req, res) => {
     var body = req.body;
 
     var usuario = new Usuario({
