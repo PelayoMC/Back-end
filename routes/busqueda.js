@@ -1,6 +1,4 @@
 var express = require('express');
-//var bcrypt = require('bcryptjs');
-//var middleware = require('../middlewares/autenticacion');
 var app = express();
 
 var Receta = require('../models/receta');

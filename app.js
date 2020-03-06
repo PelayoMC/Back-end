@@ -11,6 +11,7 @@ var intoleranceRoute = require('./routes/intolerancia');
 var loginRoute = require('./routes/login');
 var searchRoute = require('./routes/busqueda');
 var uploadRoute = require('./routes/upload');
+var imageRoute = require('./routes/imagen');
 
 // Inicializar vbls
 var app = express();
@@ -48,6 +49,7 @@ app.use('/intolerancia', intoleranceRoute);
 app.use('/login', loginRoute);
 app.use('/busqueda', searchRoute);
 app.use('/upload', uploadRoute);
+app.use('/imagen', imageRoute);
 app.use('/', appRoute);
 
 // Escuchar peticiones
