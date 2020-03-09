@@ -9,7 +9,6 @@ app.get('/:tipo/:id', (req, res, next) => {
     var id = req.params.id;
 
     var pathImg = path.resolve(__dirname, `../uploads/${tipo}/${id}`);
-    console.log(pathImg);
 
     if (fs.existsSync(pathImg)) {
         // Se encuentra imagen
