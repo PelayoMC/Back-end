@@ -145,4 +145,86 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
 });
 
 
+app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
+    let ings = req.body.ingredientes;
+    let namesE = ings.map(el => el.nombre);
+    let arrayE = await buscarIngrediente(namesE);
+    let namesB = arrayE.map(el => el.nombre);
+    let arrayB = ings.filter(element => !namesB.includes(element.nombre));
+    if (ings.length === arrayE.length) {
+        res.status(200).json({
+            ok: true,
+            mensaje: 'Ingredientes encontrados',
+            ingredientesE: arrayE.map(el => el._id)
+        });
+    } else {
+        for (i = 0; i < arrayB.length; i++) {
+            var ingrediente = new Ingrediente({
+                nombre: arrayB[i].nombre,
+                tipo: arrayB[i].tipo,
+                ingredienteSustituible: arrayB[i].ingredienteSustituible,
+                creador: req.usuario
+            });
+            arrayB[i] = ingrediente;
+        }
+        let arr = await crearIngredientes(arrayB);
+        let response = arr.filter(el => el._id);
+        for (let ing of arrayE) {
+            response.push(ing);
+        }
+
+        res.status(404).json({
+            ok: true,
+            mensaje: 'Ings encontrados/creados',
+            ings: response.map(el => el._id)
+        });
+    }
+
+
+
+    // if (ings.length === ingArray.length) {
+    //     res.status(200).json({
+    //         ok: true,
+    //         mensaje: 'Ingredientes encontrados',
+    //         ingredientes: ingArray
+    //     });
+    // } else {
+    //     res.status(200).json({
+    //         ok: true,
+    //         mensaje: 'Ingredientes encontrados',
+    //         ingredientesE: ingArray,
+    //         ingredientesC: ingArrayCrear
+    //     });
+    // }
+});
+
+async function buscarIngrediente(array) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.find({ nombre: { $in: array } })
+            .exec((err, ingredientes) => {
+                if (err) {
+                    reject(err);
+                }
+                if (ingredientes.length === 0) {
+                    resolve([]);
+                } else {
+                    resolve(ingredientes);
+                }
+            });
+    });
+}
+
+async function crearIngredientes(array) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.insertMany(array, (err, ingredientes) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(ingredientes);
+            }
+        });
+    });
+}
+
+
 module.exports = app;
