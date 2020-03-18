@@ -152,10 +152,11 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
     let namesB = arrayE.map(el => el.nombre);
     let arrayB = ings.filter(element => !namesB.includes(element.nombre));
     if (ings.length === arrayE.length) {
+        arrIngEn(ings, arrayE);
         res.status(200).json({
             ok: true,
             mensaje: 'Ingredientes encontrados',
-            ingredientesE: arrayE.map(el => el._id)
+            ings: ings
         });
     } else {
         for (i = 0; i < arrayB.length; i++) {
@@ -168,35 +169,40 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
             arrayB[i] = ingrediente;
         }
         let arr = await crearIngredientes(arrayB);
-        let response = arr.filter(el => el._id);
-        for (let ing of arrayE) {
-            response.push(ing);
-        }
+        arrIngEn(ings, arrayE);
+        arrIngBs(ings, arr);
 
-        res.status(404).json({
+        res.status(200).json({
             ok: true,
-            mensaje: 'Ings encontrados/creados',
-            ings: response.map(el => el._id)
+            mensaje: 'Ingredientes encontrados/creados',
+            ings: ings
         });
     }
-
-
-
-    // if (ings.length === ingArray.length) {
-    //     res.status(200).json({
-    //         ok: true,
-    //         mensaje: 'Ingredientes encontrados',
-    //         ingredientes: ingArray
-    //     });
-    // } else {
-    //     res.status(200).json({
-    //         ok: true,
-    //         mensaje: 'Ingredientes encontrados',
-    //         ingredientesE: ingArray,
-    //         ingredientesC: ingArrayCrear
-    //     });
-    // }
 });
+
+function arrIngEn(array, ar) {
+    for (i = 0; i < array.length; i++) {
+        if (ar[i]) {
+            array[i] = crearIngReceta(ar[i]._id, array[i].cantidad, array[i].unidades, array[i].tipo);
+        }
+    }
+}
+
+function arrIngBs(array, ar) {
+    for (i = 0; i < ar.length; i++) {
+        array[array.length - 1] = crearIngReceta(ar[i]._id, array[array.length - 1].cantidad, array[array.length - 1].unidades, array[array.length - 1].tipo);
+    }
+}
+
+function crearIngReceta(_id, cantidad, unidades, tipo) {
+    var ingRec = {
+        _id,
+        cantidad,
+        unidades,
+        tipo
+    };
+    return ingRec;
+}
 
 async function buscarIngrediente(array) {
     return new Promise((resolve, reject) => {
