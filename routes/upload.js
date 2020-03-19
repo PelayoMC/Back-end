@@ -102,6 +102,38 @@ function uploadTipo(collecion, id, nombreArchivo, res) {
             });
             break;
         case 'recetas':
+            Receta.findById(id, (err, recetaEncontrada) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error al encontrar la receta',
+                        errors: err
+                    });
+                }
+                var antiguoPath = './uploads/recetas/' + recetaEncontrada.imagen;
+                if (fs.existsSync(antiguoPath)) {
+                    fs.unlink(antiguoPath, (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+                recetaEncontrada.imagen = nombreArchivo;
+                recetaEncontrada.save((err, recetaActualizada) => {
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            mensaje: 'Error al actualizar la imagen de la receta',
+                            errors: err
+                        });
+                    }
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Imagen de usuario actualizada',
+                        receta: recetaActualizada
+                    });
+                });
+            });
             break;
     }
 }

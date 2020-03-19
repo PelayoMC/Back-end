@@ -33,6 +33,26 @@ app.get('/', (req, res, next) => {
         });
 });
 
+app.get('/:id', (req, res, next) => {
+    let id = req.params.id;
+    Receta.find({ _id: id })
+        .exec((err, receta) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando la receta',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Receta',
+                    receta: receta
+                });
+            }
+        });
+});
+
 // Modificar
 app.put('/:id', middleware.verificaToken, (req, res) => {
 
@@ -91,8 +111,10 @@ app.post('/', middleware.verificaToken, (req, res) => {
         for (let i = 0; i < ings.length; i++) {
             var ing = {
                 "ingrediente": ings[i],
+                "nombre": ids[i].nombre,
                 "cantidad": ids[i].cantidad,
-                "unidades": ids[i].unidades
+                "unidades": ids[i].unidades,
+                "tipo": ids[i].tipo
             };
             ingredientes.push(ing);
         }
@@ -106,7 +128,6 @@ app.post('/', middleware.verificaToken, (req, res) => {
             nivel: body.nivel,
             creador: req.usuario
         });
-
         receta.save((err, recetaGuardada) => {
             if (err) {
                 return res.status(400).json({
@@ -122,10 +143,17 @@ app.post('/', middleware.verificaToken, (req, res) => {
                 usuario: req.usuario.email
             });
         });
+    }).catch((message, err) => {
+        return res.status(400).json({
+            ok: false,
+            mensaje: message,
+            errors: err
+        });
     });
 });
 
 function obtenerIngredientes(ids) {
+    ids = ids.map(el => el._id);
     return new Promise((resolve, reject) => {
         Ingrediente.find({
             '_id': { $in: ids }

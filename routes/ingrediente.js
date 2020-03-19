@@ -183,20 +183,21 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
 function arrIngEn(array, ar) {
     for (i = 0; i < array.length; i++) {
         if (ar[i]) {
-            array[i] = crearIngReceta(ar[i]._id, array[i].cantidad, array[i].unidades, array[i].tipo);
+            array[i] = crearIngReceta(ar[i]._id, array[i].nombre, array[i].cantidad, array[i].unidades, array[i].tipo);
         }
     }
 }
 
 function arrIngBs(array, ar) {
     for (i = 0; i < ar.length; i++) {
-        array[array.length - 1] = crearIngReceta(ar[i]._id, array[array.length - 1].cantidad, array[array.length - 1].unidades, array[array.length - 1].tipo);
+        array[array.length - 1] = crearIngReceta(ar[i]._id, array[array.length - 1].nombre, array[array.length - 1].cantidad, array[array.length - 1].unidades, array[array.length - 1].tipo);
     }
 }
 
-function crearIngReceta(_id, cantidad, unidades, tipo) {
+function crearIngReceta(_id, nombre, cantidad, unidades, tipo) {
     var ingRec = {
         _id,
+        nombre,
         cantidad,
         unidades,
         tipo
