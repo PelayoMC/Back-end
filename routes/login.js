@@ -97,14 +97,14 @@ app.post('/', (req, res) => {
         if (!usuarioObtenido) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Credenciales incorrectas: [' + body.email + '] - email',
+                mensaje: 'Credenciales incorrectas - email',
                 errors: { message: 'Email incorrecto' }
             });
         }
         if (!bcrypt.compareSync(body.contraseña, usuarioObtenido.contraseña)) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Credenciales incorrectas: [' + body.contraseña + '] - contraseña',
+                mensaje: 'Credenciales incorrectas - contraseña',
                 errors: { message: 'Contraseña incorrecta' }
             });
         }

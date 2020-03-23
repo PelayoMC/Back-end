@@ -13,9 +13,9 @@ app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
     desde = Number(desde);
 
-    Usuario.find({}, 'nombre email imagen rol recetasFavoritas')
+    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas')
         .skip(desde)
-        .limit(5)
+        .limit(7)
         .exec(
             (err, users) => {
                 if (err) {
@@ -104,7 +104,7 @@ app.post('/', (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Error al crear usuario',
+                mensaje: 'Usuario ya existente',
                 errors: err
             });
         }
