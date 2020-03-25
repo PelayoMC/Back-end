@@ -14,6 +14,7 @@ app.get('/', (req, res, next) => {
     desde = Number(desde);
 
     Usuario.find({}, 'nombre email imagen rol google recetasFavoritas')
+        .sort('email') // -email para asc
         .skip(desde)
         .limit(7)
         .exec(
