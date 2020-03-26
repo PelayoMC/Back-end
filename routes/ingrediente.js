@@ -170,8 +170,7 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
         }
         let arr = await crearIngredientes(arrayB);
         arrIngEn(ings, arrayE);
-        arrIngBs(ings, arr);
-
+        arrIngBs(ings, arr, arrayE.length);
         res.status(200).json({
             ok: true,
             mensaje: 'Ingredientes encontrados/creados',
@@ -188,9 +187,9 @@ function arrIngEn(array, ar) {
     }
 }
 
-function arrIngBs(array, ar) {
+function arrIngBs(array, ar, pos) {
     for (i = 0; i < ar.length; i++) {
-        array[array.length - 1] = crearIngReceta(ar[i]._id, array[array.length - 1].nombre, array[array.length - 1].cantidad, array[array.length - 1].unidades, array[array.length - 1].tipo);
+        array[i + pos] = crearIngReceta(ar[i]._id, array[i + pos].nombre, array[i + pos].cantidad, array[i + pos].unidades, array[i + pos].tipo);
     }
 }
 

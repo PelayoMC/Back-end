@@ -3,7 +3,7 @@ var uniqueValidator = require('mongoose-unique-validator');
 var Schema = mongoose.Schema;
 
 var NivelesValidos = {
-    values: ['Muy facil', 'Facil', 'Intermedio', 'Dificil', 'Muy dificil'],
+    values: ['Facil', 'Medio', 'Dificil'],
     message: '{VALUE} no es un nivel permitido'
 };
 
