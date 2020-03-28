@@ -21,7 +21,7 @@ app.get('/', (req, res, next) => {
                     errors: err
                 });
             } else {
-                Receta.count({}, (err, total) => {
+                Receta.countDocuments({}, (err, total) => {
                     res.status(200).json({
                         ok: true,
                         mensaje: 'Recetas',

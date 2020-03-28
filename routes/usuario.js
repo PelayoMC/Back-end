@@ -26,7 +26,7 @@ app.get('/', (req, res, next) => {
                         errors: err
                     });
                 } else {
-                    Usuario.count({}, (err, total) => {
+                    Usuario.countDocuments({}, (err, total) => {
                         res.status(200).json({
                             ok: true,
                             mensaje: 'Usuarios',

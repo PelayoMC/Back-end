@@ -19,7 +19,7 @@ app.get('/', (req, res, next) => {
                     errors: err
                 });
             } else {
-                Ingrediente.count({}, (err, total) => {
+                Ingrediente.countDocuments({}, (err, total) => {
                     res.status(200).json({
                         ok: true,
                         mensaje: 'Ingredientes',

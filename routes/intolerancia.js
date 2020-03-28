@@ -21,7 +21,7 @@ app.get('/', (req, res, next) => {
                     errors: err
                 });
             } else {
-                Intolerancia.count({}, (err, total) => {
+                Intolerancia.countDocuments({}, (err, total) => {
                     res.status(200).json({
                         ok: true,
                         mensaje: 'Intolerancias',
