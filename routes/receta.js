@@ -53,6 +53,50 @@ app.get('/:id', (req, res, next) => {
         });
 });
 
+app.put('/addIngs/:id', middleware.verificaToken, (req, res) => {
+    var id = req.params.id;
+    var ings = req.body.ingredients;
+    console.log('SIN');
+    console.log(ings);
+    for (let ing of ings) {
+        ing.ingredienteSustituible = mongoose.Types.ObjectId(ing.ingredienteSustituible);
+    }
+    console.log('CON');
+    console.log(ings);
+    Receta.findById(id, (err, recetaEncontrada) => {
+        if (!recetaEncontrada) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'La receta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una receta con ese ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al encontrar la receta',
+                errors: err
+            });
+        }
+        console.log(recetaEncontrada.ingredientes);
+        recetaEncontrada.ingredientes = ings;
+        recetaEncontrada.save((err, recetaGuardada) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al actualizar la receta',
+                    errors: err
+                });
+            }
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Receta actualizada correctamente',
+                receta: recetaGuardada
+            });
+        });
+    });
+});
+
 // Modificar
 app.put('/:id', middleware.verificaToken, (req, res) => {
 
@@ -84,7 +128,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         recetaEncontrada.nivel = body.nivel;
         recetaEncontrada.creador = req.usuario;
 
-        recetaEncontrado.save((err, recetaGuardada) => {
+        recetaEncontrada.save((err, recetaGuardada) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -142,12 +186,6 @@ app.post('/', middleware.verificaToken, (req, res) => {
                 receta: recetaGuardada,
                 usuario: req.usuario.email
             });
-        });
-    }).catch((message, err) => {
-        return res.status(400).json({
-            ok: false,
-            mensaje: message,
-            errors: err
         });
     });
 });

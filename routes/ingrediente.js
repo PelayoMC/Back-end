@@ -31,6 +31,7 @@ app.get('/', (req, res, next) => {
         });
 });
 
+
 // Modificar
 app.put('/:id', middleware.verificaToken, (req, res) => {
 
@@ -54,23 +55,6 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         }
 
         ingredienteEncontrado.nombre = body.nombre;
-        ingredienteEncontrado.tipo = body.tipo;
-
-        Ingrediente.findById(body.ingredienteSustituible, (err, ingredienteRelEncontrado) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error al encontrar el ingrediente',
-                    errors: err
-                });
-            }
-            if (!ingredienteRelEncontrado) {
-                ingredienteEncontrado.ingredienteSustituible = null;
-            } else {
-                ingredienteEncontrado.ingredienteSustituible = ingredienteRelEncontrado;
-            }
-        });
-
         ingredienteEncontrado.creador = req.usuario;
         ingredienteEncontrado.save((err, ingredienteGuardado) => {
             if (err) {
@@ -89,32 +73,47 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
+
 // Añadir
-app.post('/', middleware.verificaToken, (req, res) => {
-    var body = req.body;
-
-    var ingrediente = new Ingrediente({
-        nombre: body.nombre,
-        tipo: body.tipo,
-        ingredienteSustituible: body.ingredienteSustituible,
-        creador: req.usuario
-    });
-
-    ingrediente.save((err, ingredienteGuardado) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'Error al crear el ingrediente',
-                errors: err
-            });
-        }
+app.post('/', middleware.verificaToken, async(req, res) => {
+    var body = req.body.nombres;
+    let names = body.filter(el => el != '');
+    let ings = [];
+    arrayE = await buscarIngredientes(names);
+    if (arrayE.length == names.length) {
         res.status(201).json({
             ok: true,
-            mensaje: 'Ingrediente guardado',
-            ingrediente: ingredienteGuardado,
+            mensaje: 'Ingredientes guardados',
+            ingredientes: arrayE,
             usuario: req.usuario.email
         });
-    });
+    } else {
+        if (arrayE.length == 0) {
+            ings = await crearIngredientesNames(names, req.usuario);
+            res.status(201).json({
+                ok: true,
+                mensaje: 'Ingredientes guardados',
+                ingredientes: ings,
+                usuario: req.usuario.email
+            });
+        } else {
+            for (let ing of arrayE) {
+                ings.push(ing);
+            }
+            namesE = ings.map(el => el.nombre);
+            namesB = names.filter(el => !namesE.includes(el));
+            arrayB = await crearIngredientesNames(namesB, req.usuario);
+            for (let ing of arrayB) {
+                ings.push(ing);
+            }
+            res.status(201).json({
+                ok: true,
+                mensaje: 'Ingredientes guardados',
+                ingredientes: ings,
+                usuario: req.usuario.email
+            });
+        }
+    }
 });
 
 
@@ -148,7 +147,7 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
 app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
     let ings = req.body.ingredientes;
     let namesE = ings.map(el => el.nombre);
-    let arrayE = await buscarIngrediente(namesE);
+    let arrayE = await buscarIngredientes(namesE);
     let namesB = arrayE.map(el => el.nombre);
     let arrayB = ings.filter(element => !namesB.includes(element.nombre));
     if (ings.length === arrayE.length) {
@@ -162,8 +161,6 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
         for (i = 0; i < arrayB.length; i++) {
             var ingrediente = new Ingrediente({
                 nombre: arrayB[i].nombre,
-                tipo: arrayB[i].tipo,
-                ingredienteSustituible: arrayB[i].ingredienteSustituible,
                 creador: req.usuario
             });
             arrayB[i] = ingrediente;
@@ -204,7 +201,7 @@ function crearIngReceta(_id, nombre, cantidad, unidades, tipo) {
     return ingRec;
 }
 
-async function buscarIngrediente(array) {
+async function buscarIngredientes(array) {
     return new Promise((resolve, reject) => {
         Ingrediente.find({ nombre: { $in: array } })
             .exec((err, ingredientes) => {
@@ -223,6 +220,26 @@ async function buscarIngrediente(array) {
 async function crearIngredientes(array) {
     return new Promise((resolve, reject) => {
         Ingrediente.insertMany(array, (err, ingredientes) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(ingredientes);
+            }
+        });
+    });
+}
+
+async function crearIngredientesNames(array, user) {
+    let ings = [];
+    for (let name of array) {
+        var ingrediente = new Ingrediente({
+            nombre: name,
+            creador: user
+        });
+        ings.push(ingrediente);
+    }
+    return new Promise((resolve, reject) => {
+        Ingrediente.insertMany(ings, (err, ingredientes) => {
             if (err) {
                 reject(err);
             } else {

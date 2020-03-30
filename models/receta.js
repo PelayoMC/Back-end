@@ -16,7 +16,8 @@ var recetaSchema = new Schema({
             nombre: { type: String, required: [true, 'Nombre obligatorio'] },
             cantidad: { type: Number, required: [true, 'Cantidad de ingrediente obligatoria'] },
             unidades: { type: String, required: [true, 'Unidades obligatorias'] },
-            tipo: { type: String, required: [true, 'Nombre obligatorio'] }
+            tipo: { type: String, required: [true, 'Nombre obligatorio'] },
+            ingredienteSustituible: { type: Schema.Types.ObjectId, ref: 'Ingrediente', required: false },
         }],
         required: [true, 'Ingredientes obligatorios']
     },
