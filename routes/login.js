@@ -10,6 +10,18 @@ var Usuario = require('../models/usuario');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(CLIENT_ID);
 
+var middleware = require('../middlewares/autenticacion');
+
+// RENOVACION TOKEN
+app.get('/renuevatoken', middleware.verificaToken, (req, res) => {
+    var token = jsonwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 14400 });
+    res.status(200).json({
+        ok: true,
+        token: token
+    });
+});
+
+
 // AUTENTICACION GOOGLE
 async function verify(token) {
     const ticket = await client.verifyIdToken({

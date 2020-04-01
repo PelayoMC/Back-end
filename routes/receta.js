@@ -56,13 +56,9 @@ app.get('/:id', (req, res, next) => {
 app.put('/addIngs/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
     var ings = req.body.ingredients;
-    console.log('SIN');
-    console.log(ings);
     for (let ing of ings) {
         ing.ingredienteSustituible = mongoose.Types.ObjectId(ing.ingredienteSustituible);
     }
-    console.log('CON');
-    console.log(ings);
     Receta.findById(id, (err, recetaEncontrada) => {
         if (!recetaEncontrada) {
             return res.status(400).json({
@@ -78,7 +74,6 @@ app.put('/addIngs/:id', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
-        console.log(recetaEncontrada.ingredientes);
         recetaEncontrada.ingredientes = ings;
         recetaEncontrada.save((err, recetaGuardada) => {
             if (err) {

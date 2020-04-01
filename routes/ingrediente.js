@@ -31,6 +31,28 @@ app.get('/', (req, res, next) => {
         });
 });
 
+// OBTENER SUSTITUIBLES
+app.post('/sust', (req, res, next) => {
+    var ings = req.body;
+
+    Ingrediente.find({ _id: { $in: ings } })
+        .exec((err, ingredientes) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando ingredientes sustituibles',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Ingredientes sustituibles',
+                    ingredientes: ingredientes
+                });
+            }
+        });
+});
+
 
 // Modificar
 app.put('/:id', middleware.verificaToken, (req, res) => {
@@ -74,7 +96,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 });
 
 
-// Añadir
+// Añadir varios ingredientes
 app.post('/', middleware.verificaToken, async(req, res) => {
     var body = req.body.nombres;
     let names = body.filter(el => el != '');
@@ -143,7 +165,7 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
-
+// CREACION DE RECETAS
 app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
     let ings = req.body.ingredientes;
     let namesE = ings.map(el => el.nombre);
