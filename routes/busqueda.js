@@ -25,16 +25,20 @@ app.get('/:coleccion/:busqueda?', (req, res, next) => {
 
     var coleccion = req.params.coleccion;
     var busqueda = req.params.busqueda;
+    var from = req.query.from || 0;
+    var limit = req.query.limit || 7;
+    from = Number(from);
+    limit = Number(limit);
     var regular = new RegExp(busqueda, 'i');
 
     var promesa;
 
     switch (coleccion) {
         case 'usuario':
-            promesa = buscarUsuarios(busqueda, regular);
+            promesa = buscarUsuarios(busqueda, regular, from, limit);
             break;
         case 'receta':
-            promesa = buscarRecetas(busqueda, regular);
+            promesa = buscarRecetas(busqueda, regular, from, limit);
             break;
         default:
             return res.status(400).json({
@@ -54,57 +58,80 @@ app.get('/:coleccion/:busqueda?', (req, res, next) => {
         } else {
             res.status(200).json({
                 ok: true,
-                coleccion: data
+                coleccion: data[0],
+                total: data[1]
             });
         }
+    }).catch(err => {
+        res.status(404).json({
+            ok: false,
+            mensaje: err
+        });
     });
 });
 
 
 
-function buscarUsuarios(busqueda, regex) {
+function buscarUsuarios(busqueda, regex, from, limit) {
     if (!busqueda) {
         return new Promise((resolve, reject) => {
-            Usuario.find({}, 'nombre email imagen rol').exec((err, users) => {
+            Usuario.find({}, 'nombre email imagen rol').skip(from)
+                .limit(limit).exec((err, users) => {
+                    if (err) {
+                        reject('Error al cargar los usuarios', err);
+                    } else {
+                        resolve(users);
+                    }
+                });
+        });
+    }
+    return new Promise((resolve, reject) => {
+        Usuario.find({}, 'nombre email imagen rol').or([{ nombre: regex }, { email: regex }])
+            .skip(from)
+            .limit(limit).exec((err, users) => {
                 if (err) {
                     reject('Error al cargar los usuarios', err);
                 } else {
                     resolve(users);
                 }
             });
-        });
-    }
-    return new Promise((resolve, reject) => {
-        Usuario.find({}, 'nombre email imagen rol').or([{ nombre: regex }, { email: regex }]).exec((err, users) => {
-            if (err) {
-                reject('Error al cargar los usuarios', err);
-            } else {
-                resolve(users);
-            }
-        });
     });
 }
 
-function buscarRecetas(busqueda, regex) {
+function buscarRecetas(busqueda, regex, from, limit) {
     if (!busqueda) {
         return new Promise((resolve, reject) => {
-            Receta.find({}, (err, recetas) => {
-                if (err) {
-                    reject('Error al cargar las recetas', err);
-                } else {
-                    resolve(recetas);
-                }
-            });
+            Receta.find({}).skip(from)
+                .limit(limit).exec((err, recetas) => {
+                    if (err) {
+                        reject('Error al cargar las recetas', err);
+                    } else {
+                        Receta.countDocuments().exec((err, total) => {
+                            if (err) {
+                                reject('Error al contar las recetas', err);
+                            } else {
+                                resolve([recetas, total]);
+                            }
+                        });
+                    }
+                });
         });
     }
     return new Promise((resolve, reject) => {
-        Receta.find().or([{ nombre: regex }]).exec((err, recetas) => {
-            if (err) {
-                reject('Error al cargar las recetas', err);
-            } else {
-                resolve(recetas);
-            }
-        });
+        Receta.find().or([{ nombre: regex }]).skip(from)
+            .limit(limit).exec((err, recetas) => {
+                if (err) {
+                    reject('Error al cargar las recetas', err);
+                } else {
+                    Receta.countDocuments().or([{ nombre: regex }]).exec((err, total) => {
+                        if (err) {
+                            reject('Error al contar las recetas', err);
+                        } else {
+                            resolve([recetas, total]);
+                        }
+                    });
+                }
+            });
     });
 }
 

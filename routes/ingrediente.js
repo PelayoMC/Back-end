@@ -44,6 +44,11 @@ app.post('/sust', (req, res, next) => {
                     errors: err
                 });
             } else {
+                for (let i = 0; i < ings.length; i++) {
+                    if (ings[i] == null) {
+                        ingredientes.splice(i, 0, null);
+                    }
+                }
                 res.status(200).json({
                     ok: true,
                     mensaje: 'Ingredientes sustituibles',
@@ -131,8 +136,7 @@ app.post('/', middleware.verificaToken, async(req, res) => {
             res.status(201).json({
                 ok: true,
                 mensaje: 'Ingredientes guardados',
-                ingredientes: ings,
-                usuario: req.usuario.email
+                ingredientes: ings
             });
         }
     }

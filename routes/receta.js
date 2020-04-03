@@ -8,11 +8,13 @@ var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
+    var limit = req.query.limit || 12;
     desde = Number(desde);
+    limit = Number(limit);
 
     Receta.find({})
         .skip(desde)
-        .limit(5)
+        .limit(limit)
         .exec((err, recetas) => {
             if (err) {
                 return res.status(500).json({
@@ -57,7 +59,9 @@ app.put('/addIngs/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
     var ings = req.body.ingredients;
     for (let ing of ings) {
-        ing.ingredienteSustituible = mongoose.Types.ObjectId(ing.ingredienteSustituible);
+        if (ing.ingredienteSustituible !== null) {
+            ing.ingredienteSustituible = mongoose.Types.ObjectId(ing.ingredienteSustituible);
+        }
     }
     Receta.findById(id, (err, recetaEncontrada) => {
         if (!recetaEncontrada) {
