@@ -6,11 +6,14 @@ var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
+    var limit = req.query.limit || 10;
     desde = Number(desde);
+    limit = Number(limit);
 
     Ingrediente.find({})
         .skip(desde)
-        .limit(5)
+        .limit(limit)
+        .sort('nombre')
         .exec((err, ingredientes) => {
             if (err) {
                 return res.status(500).json({

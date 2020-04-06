@@ -10,6 +10,7 @@ var Usuario = require('../models/usuario');
 // (GET) Obtener listado de usuarios
 // ================================================
 app.get('/', (req, res, next) => {
+
     var desde = req.query.from || 0;
     desde = Number(desde);
 

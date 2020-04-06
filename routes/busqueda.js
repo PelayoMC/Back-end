@@ -3,6 +3,8 @@ var app = express();
 
 var Receta = require('../models/receta');
 var Usuario = require('../models/usuario');
+var Ingrediente = require('../models/ingrediente');
+var Intolerancia = require('../models/intolerancia');
 
 app.get('/all/:busqueda?', (req, res, next) => {
 
@@ -40,6 +42,12 @@ app.get('/:coleccion/:busqueda?', (req, res, next) => {
         case 'receta':
             promesa = buscarRecetas(busqueda, regular, from, limit);
             break;
+        case 'ingrediente':
+            promesa = buscarIngredientes(busqueda, regular, from, limit);
+            break;
+        case 'intolerancia':
+            promesa = buscarIntolerancias(busqueda, regular, from, limit);
+            break;
         default:
             return res.status(400).json({
                 ok: false,
@@ -76,11 +84,17 @@ function buscarUsuarios(busqueda, regex, from, limit) {
     if (!busqueda) {
         return new Promise((resolve, reject) => {
             Usuario.find({}, 'nombre email imagen rol').skip(from)
-                .limit(limit).exec((err, users) => {
+                .limit(limit).sort('email').exec((err, users) => {
                     if (err) {
                         reject('Error al cargar los usuarios', err);
                     } else {
-                        resolve(users);
+                        Usuario.countDocuments().exec((err, total) => {
+                            if (err) {
+                                reject('Error al contar los usuarios', err);
+                            } else {
+                                resolve([users, total]);
+                            }
+                        });
                     }
                 });
         });
@@ -88,11 +102,17 @@ function buscarUsuarios(busqueda, regex, from, limit) {
     return new Promise((resolve, reject) => {
         Usuario.find({}, 'nombre email imagen rol').or([{ nombre: regex }, { email: regex }])
             .skip(from)
-            .limit(limit).exec((err, users) => {
+            .limit(limit).sort('email').exec((err, users) => {
                 if (err) {
                     reject('Error al cargar los usuarios', err);
                 } else {
-                    resolve(users);
+                    Usuario.countDocuments().or([{ nombre: regex }, { email: regex }]).exec((err, total) => {
+                        if (err) {
+                            reject('Error al contar los usuarios', err);
+                        } else {
+                            resolve([users, total]);
+                        }
+                    });
                 }
             });
     });
@@ -102,7 +122,7 @@ function buscarRecetas(busqueda, regex, from, limit) {
     if (!busqueda) {
         return new Promise((resolve, reject) => {
             Receta.find({}).skip(from)
-                .limit(limit).exec((err, recetas) => {
+                .limit(limit).sort('nombre').exec((err, recetas) => {
                     if (err) {
                         reject('Error al cargar las recetas', err);
                     } else {
@@ -119,7 +139,7 @@ function buscarRecetas(busqueda, regex, from, limit) {
     }
     return new Promise((resolve, reject) => {
         Receta.find().or([{ nombre: regex }]).skip(from)
-            .limit(limit).exec((err, recetas) => {
+            .limit(limit).sort('nombre').exec((err, recetas) => {
                 if (err) {
                     reject('Error al cargar las recetas', err);
                 } else {
@@ -128,6 +148,80 @@ function buscarRecetas(busqueda, regex, from, limit) {
                             reject('Error al contar las recetas', err);
                         } else {
                             resolve([recetas, total]);
+                        }
+                    });
+                }
+            });
+    });
+}
+
+function buscarIngredientes(busqueda, regex, from, limit) {
+    if (!busqueda) {
+        return new Promise((resolve, reject) => {
+            Ingrediente.find({}).skip(from)
+                .limit(limit).sort('nombre').exec((err, ingredientes) => {
+                    if (err) {
+                        reject('Error al cargar los ingredientes', err);
+                    } else {
+                        Ingrediente.countDocuments().exec((err, total) => {
+                            if (err) {
+                                reject('Error al contar los ingredientes', err);
+                            } else {
+                                resolve([ingredientes, total]);
+                            }
+                        });
+                    }
+                });
+        });
+    }
+    return new Promise((resolve, reject) => {
+        Ingrediente.find().or([{ nombre: regex }]).skip(from)
+            .limit(limit).sort('nombre').exec((err, ingredientes) => {
+                if (err) {
+                    reject('Error al cargar los ingredientes', err);
+                } else {
+                    Ingrediente.countDocuments().or([{ nombre: regex }]).exec((err, total) => {
+                        if (err) {
+                            reject('Error al contar los ingredientes', err);
+                        } else {
+                            resolve([ingredientes, total]);
+                        }
+                    });
+                }
+            });
+    });
+}
+
+function buscarIntolerancias(busqueda, regex, from, limit) {
+    if (!busqueda) {
+        return new Promise((resolve, reject) => {
+            Intolerancia.find({}).skip(from)
+                .limit(limit).sort('nombre').exec((err, intolerancias) => {
+                    if (err) {
+                        reject('Error al cargar las intolerancias', err);
+                    } else {
+                        Intolerancia.countDocuments().exec((err, total) => {
+                            if (err) {
+                                reject('Error al contar las intolerancias', err);
+                            } else {
+                                resolve([intolerancias, total]);
+                            }
+                        });
+                    }
+                });
+        });
+    }
+    return new Promise((resolve, reject) => {
+        Intolerancia.find().or([{ nombre: regex }]).skip(from)
+            .limit(limit).sort('nombre').exec((err, intolerancias) => {
+                if (err) {
+                    reject('Error al cargar las intolerancias', err);
+                } else {
+                    Intolerancia.countDocuments().or([{ nombre: regex }]).exec((err, total) => {
+                        if (err) {
+                            reject('Error al contar las intolerancias', err);
+                        } else {
+                            resolve([intolerancias, total]);
                         }
                     });
                 }

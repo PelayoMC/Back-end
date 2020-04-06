@@ -15,6 +15,7 @@ app.get('/', (req, res, next) => {
     Receta.find({})
         .skip(desde)
         .limit(limit)
+        .sort('nombre')
         .exec((err, recetas) => {
             if (err) {
                 return res.status(500).json({
