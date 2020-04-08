@@ -154,7 +154,7 @@ app.post('/', middleware.verificaToken, (req, res) => {
         var ingredientes = [];
         for (let i = 0; i < ings.length; i++) {
             var ing = {
-                "ingrediente": ings[i],
+                "_id": ings[i]._id,
                 "nombre": ids[i].nombre,
                 "cantidad": ids[i].cantidad,
                 "unidades": ids[i].unidades,

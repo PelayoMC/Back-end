@@ -111,7 +111,7 @@ function uploadTipo(collecion, id, nombreArchivo, res) {
                     });
                 }
                 var antiguoPath = './uploads/recetas/' + recetaEncontrada.imagen;
-                if (fs.existsSync(antiguoPath)) {
+                if (fs.existsSync(antiguoPath) && recetaEncontrada.imagen.length > 3) {
                     fs.unlink(antiguoPath, (err) => {
                         if (err) {
                             console.log(err);

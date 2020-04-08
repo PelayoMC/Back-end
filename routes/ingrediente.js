@@ -3,6 +3,7 @@ var middleware = require('../middlewares/autenticacion');
 var app = express();
 
 var Ingrediente = require('../models/ingrediente');
+var Receta = require('../models/receta');
 
 app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
@@ -33,6 +34,64 @@ app.get('/', (req, res, next) => {
             }
         });
 });
+
+app.post('/recetas', async(req, res, next) => {
+    var ings = req.body.ingredientes;
+    var arrResp = [];
+    for (let ing of ings) {
+        let recetas = await obtenerRecetas(ing).catch(err => {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error cargando recetas de ingredientes',
+                errors: err
+            });
+        });
+        let sustituibles = await obtenerSustituibles(ing).catch(err => {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error cargando recetas sustituibles',
+                errors: err
+            });
+        });
+        let resp = {
+            ingrediente: ing,
+            recetas,
+            sustituibles
+        };
+        arrResp.push(resp);
+    }
+    res.status(200).json({
+        ok: true,
+        mensaje: 'Ingredientes y recetas',
+        resp: arrResp
+    });
+});
+
+async function obtenerRecetas(ing) {
+    return new Promise((resolve, reject) => {
+        Receta.find({ "ingredientes._id": ing._id })
+            .exec((err, recetas) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(recetas);
+                }
+            });
+    });
+}
+
+async function obtenerSustituibles(ing) {
+    return new Promise((resolve, reject) => {
+        Receta.find({ "ingredientes.ingredienteSustituible": ing._id })
+            .exec((err, recetas) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(recetas);
+                }
+            });
+    });
+}
 
 // OBTENER SUSTITUIBLES
 app.post('/sust', (req, res, next) => {
@@ -110,37 +169,44 @@ app.post('/', middleware.verificaToken, async(req, res) => {
     let names = body.filter(el => el != '');
     let ings = [];
     arrayE = await buscarIngredientes(names);
-    if (arrayE.length == names.length) {
+    if (names.length == 0) {
         res.status(201).json({
             ok: true,
-            mensaje: 'Ingredientes guardados',
-            ingredientes: arrayE,
-            usuario: req.usuario.email
+            mensaje: 'No se han añadido ingredientes'
         });
     } else {
-        if (arrayE.length == 0) {
-            ings = await crearIngredientesNames(names, req.usuario);
+        if (arrayE.length == names.length) {
             res.status(201).json({
                 ok: true,
                 mensaje: 'Ingredientes guardados',
-                ingredientes: ings,
+                ingredientes: arrayE,
                 usuario: req.usuario.email
             });
         } else {
-            for (let ing of arrayE) {
-                ings.push(ing);
+            if (arrayE.length == 0) {
+                ings = await crearIngredientesNames(names, req.usuario);
+                res.status(201).json({
+                    ok: true,
+                    mensaje: 'Ingredientes guardados',
+                    ingredientes: ings,
+                    usuario: req.usuario.email
+                });
+            } else {
+                for (let ing of arrayE) {
+                    ings.push(ing);
+                }
+                namesE = ings.map(el => el.nombre);
+                namesB = names.filter(el => !namesE.includes(el));
+                arrayB = await crearIngredientesNames(namesB, req.usuario);
+                for (let ing of arrayB) {
+                    ings.push(ing);
+                }
+                res.status(201).json({
+                    ok: true,
+                    mensaje: 'Ingredientes guardados',
+                    ingredientes: ings
+                });
             }
-            namesE = ings.map(el => el.nombre);
-            namesB = names.filter(el => !namesE.includes(el));
-            arrayB = await crearIngredientesNames(namesB, req.usuario);
-            for (let ing of arrayB) {
-                ings.push(ing);
-            }
-            res.status(201).json({
-                ok: true,
-                mensaje: 'Ingredientes guardados',
-                ingredientes: ings
-            });
         }
     }
 });
