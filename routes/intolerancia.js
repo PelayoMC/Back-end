@@ -8,11 +8,14 @@ var Ingrediente = require('../models/ingrediente');
 
 app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
+    var limit = req.query.limit || 12;
     desde = Number(desde);
+    limit = Number(limit);
 
     Intolerancia.find({})
         .skip(desde)
-        .limit(5)
+        .limit(limit)
+        .sort('nombre')
         .exec((err, intolerancias) => {
             if (err) {
                 return res.status(500).json({

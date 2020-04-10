@@ -204,7 +204,6 @@ function obtenerIngredientes(ids) {
     });
 }
 
-
 app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
 
@@ -230,6 +229,36 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
         });
     });
 });
+
+
+app.delete('/', middleware.verificaToken, (req, res) => {
+    var recetas = req.query;
+    ids = recetas.ids;
+
+    Receta.deleteMany({ '_id': { $in: ids } }, (err, recetasBorrada) => {
+        if (!recetasBorrada) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'La recetas con los ids: [' + ids + '] no existen',
+                errors: { message: 'No existen las recetas con esos ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al borrar las recetas',
+                errors: err
+            });
+        }
+        res.status(200).json({
+            ok: true,
+            mensaje: 'Recetas borradas',
+            recetas: recetasBorrada
+        });
+    });
+});
+
+
 
 
 module.exports = app;
