@@ -36,6 +36,28 @@ app.get('/', (req, res, next) => {
         });
 });
 
+
+app.get('/:id', (req, res, next) => {
+    var id = req.params.id;
+
+    Intolerancia.find({ '_id': id })
+        .exec((err, intolerancia) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando la intolerancia',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Intolerancia',
+                    intolerancia
+                });
+            }
+        });
+});
+
 // Modificar
 app.put('/:id', middleware.verificaToken, (req, res) => {
 

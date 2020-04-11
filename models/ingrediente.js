@@ -4,6 +4,7 @@ var Schema = mongoose.Schema;
 
 var ingredienteSchema = new Schema({
     nombre: { type: String, unique: true, required: [true, 'Nombre obligatorio'] },
+    noApto: { type: [String], required: [true, 'Etiquetas no-apto obligatoria'] },
     creador: { type: Schema.Types.ObjectId, ref: 'Usuario' }
 }, { collection: 'ingredientes' });
 

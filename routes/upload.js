@@ -9,6 +9,7 @@ var extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
 var coleccionesValidas = ['usuarios', 'recetas'];
 var Usuario = require('../models/usuario');
 var Receta = require('../models/receta');
+var Intolerancias = require('../models/intolerancia');
 
 app.put('/:tipo/:id', (req, res, next) => {
 
@@ -129,8 +130,42 @@ function uploadTipo(collecion, id, nombreArchivo, res) {
                     }
                     return res.status(200).json({
                         ok: true,
-                        mensaje: 'Imagen de usuario actualizada',
+                        mensaje: 'Imagen de receta actualizada',
                         receta: recetaActualizada
+                    });
+                });
+            });
+            break;
+        case 'intolerancias':
+            Intolerancias.findById(id, (err, intoleranciaEncontrada) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error al encontrar la intolerancia',
+                        errors: err
+                    });
+                }
+                var antiguoPath = './uploads/intolerancias/' + intoleranciaEncontrada.imagen;
+                if (fs.existsSync(antiguoPath) && intoleranciaEncontrada.imagen.length > 3) {
+                    fs.unlink(antiguoPath, (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+                intoleranciaEncontrada.imagen = nombreArchivo;
+                intoleranciaEncontrada.save((err, intoleranciaActualizada) => {
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            mensaje: 'Error al actualizar la imagen de la intolerancia',
+                            errors: err
+                        });
+                    }
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Imagen de intolerancia actualizada',
+                        intolerancia: intoleranciaActualizada
                     });
                 });
             });
