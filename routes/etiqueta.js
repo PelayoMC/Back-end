@@ -74,14 +74,12 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
     var etiquetas = [];
-    console.log(body);
     for (let item of body.etiquetas) {
         var etiqueta = {
             nombre: item
         }
         etiquetas.push(etiqueta);
     }
-    console.log(etiquetas);
     Etiqueta.create(etiquetas, (err, etiquetasGuardada) => {
         if (err) {
             return res.status(400).json({
