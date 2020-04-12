@@ -6,14 +6,8 @@ var app = express();
 var Etiqueta = require('../models/etiqueta');
 
 app.get('/', (req, res, next) => {
-    var desde = req.query.from || 0;
-    var limit = req.query.limit || 12;
-    desde = Number(desde);
-    limit = Number(limit);
 
     Etiqueta.find({})
-        .skip(desde)
-        .limit(limit)
         .sort('nombre')
         .exec((err, etiquetas) => {
             if (err) {
@@ -79,31 +73,30 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
-    var ids = req.body.ingredientes;
-
-    ids = ids.map(id => mongoose.Types.ObjectId(id));
-
-    obtenerIngredientes(ids).then(ings => {
-        var etiqueta = new etiqueta({
-            nombre: body.nombre,
-            ingredientes: ings
-        });
-        etiqueta.save((err, etiquetaGuardada) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje: 'Error al crear la etiqueta',
-                    errors: err
-                });
-            }
-            res.status(201).json({
-                ok: true,
-                mensaje: 'etiqueta guardada',
-                etiqueta: etiquetaGuardada,
-                usuarioToken: req.usuario.email
+    var etiquetas = [];
+    console.log(body);
+    for (let item of body.etiquetas) {
+        var etiqueta = {
+            nombre: item
+        }
+        etiquetas.push(etiqueta);
+    }
+    console.log(etiquetas);
+    Etiqueta.create(etiquetas, (err, etiquetasGuardada) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Error al crear las etiquetas',
+                errors: err
             });
+        }
+        res.status(201).json({
+            ok: true,
+            mensaje: 'etiquetas guardada',
+            etiquetas: etiquetasGuardada
         });
     });
+
 });
 
 app.delete('/:id', middleware.verificaToken, (req, res) => {

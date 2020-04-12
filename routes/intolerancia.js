@@ -103,29 +103,25 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
-    var ids = req.body.ingredientes;
-
-    ids = ids.map(id => mongoose.Types.ObjectId(id));
-
-    obtenerIngredientes(ids).then(ings => {
-        var intolerancia = new Intolerancia({
-            nombre: body.nombre,
-            ingredientes: ings
-        });
-        intolerancia.save((err, intoleranciaGuardada) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje: 'Error al crear la intolerancia',
-                    errors: err
-                });
-            }
-            res.status(201).json({
-                ok: true,
-                mensaje: 'Intolerancia guardada',
-                intolerancia: intoleranciaGuardada,
-                usuarioToken: req.usuario.email
+    console.log(body);
+    var intolerancia = new Intolerancia({
+        nombre: body.nombre,
+        descripcion: body.descripcion,
+        noApto: body.noApto
+    });
+    intolerancia.save((err, intoleranciaGuardada) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Error al crear la intolerancia',
+                errors: err
             });
+        }
+        res.status(201).json({
+            ok: true,
+            mensaje: 'Intolerancia guardada',
+            intolerancia: intoleranciaGuardada,
+            usuarioToken: req.usuario.email
         });
     });
 });

@@ -6,7 +6,7 @@ var app = express();
 app.use(fileupload());
 
 var extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
-var coleccionesValidas = ['usuarios', 'recetas'];
+var coleccionesValidas = ['usuarios', 'recetas', 'intolerancias'];
 var Usuario = require('../models/usuario');
 var Receta = require('../models/receta');
 var Intolerancias = require('../models/intolerancia');
