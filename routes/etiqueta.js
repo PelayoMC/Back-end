@@ -74,10 +74,10 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
     var etiquetas = [];
-    for (let item of body.etiquetas) {
+    for (let item of body) {
         var etiqueta = {
             nombre: item
-        }
+        };
         etiquetas.push(etiqueta);
     }
     Etiqueta.create(etiquetas, (err, etiquetasGuardada) => {

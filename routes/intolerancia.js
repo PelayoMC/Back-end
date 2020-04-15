@@ -81,6 +81,9 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         }
 
         intoleranciaEncontrada.nombre = body.nombre;
+        intoleranciaEncontrada.descripcion = body.descripcion;
+        intoleranciaEncontrada.noApto = body.noApto;
+        intoleranciaEncontrada.imagen = body.imagen;
 
         intoleranciaEncontrada.save((err, intoleranciaGuardada) => {
             if (err) {

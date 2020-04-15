@@ -35,6 +35,35 @@ app.get('/', (req, res, next) => {
         });
 });
 
+// Get etiquetas
+app.post('/obtenerTags/', async(req, res, next) => {
+    var ids = req.body.ings;
+    ar = [];
+    for (let id of ids) {
+        ar.push(await obtenerNoAptos(id));
+    }
+    res.status(200).json({
+        ok: true,
+        mensaje: 'Ingredientes',
+        etiquetas: ar.map(el => el.noApto)
+    });
+});
+
+async function obtenerNoAptos(id) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.find({ _id: id })
+            .exec((err, ingrediente) => {
+                if (err) {
+                    reject(err);
+                } else if (ingrediente.length === 0) {
+                    resolve('');
+                } else {
+                    resolve(ingrediente[0]);
+                }
+            });
+    })
+}
+
 app.post('/recetas', async(req, res, next) => {
     var ings = req.body.ingredientes;
     var arrResp = [];
@@ -119,6 +148,53 @@ app.post('/sust', (req, res, next) => {
             }
         });
 });
+
+// AÑADIR ETIQUETAS
+app.put('/addTags', middleware.verificaToken, async(req, res) => {
+
+    var names = req.body.nombres;
+    var tags = req.body.tags;
+
+    ar = [];
+    for (let i = 0; i < tags.length; i++) {
+        var ing = new Ingrediente({
+            _id: names[i]._id,
+            nombre: names[i].nombre,
+            noApto: tags[i].map(el => el.nombre),
+            creador: req.usuario
+        });
+        ar.push(ing);
+    }
+    ar2 = [];
+    for (let ing of ar) {
+        ar2.push(await put(ing));
+    }
+    res.status(200).json({
+        ok: true,
+        mensaje: 'Ingredientes actualizados correctamente',
+        ingredientes: ar2
+    });
+});
+
+async function put(ing) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.findById(ing._id, (err, ingredienteEncontrado) => {
+            if (!ingredienteEncontrado) {
+                reject(err);
+            }
+            if (err) {
+                reject(err);
+            }
+            ingredienteEncontrado.noApto = ing.noApto;
+            ingredienteEncontrado.save((err, ingredienteGuardado) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(ingredienteGuardado);
+            });
+        });
+    });
+}
 
 
 // Modificar
