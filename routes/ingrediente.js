@@ -149,6 +149,83 @@ app.post('/sust', (req, res, next) => {
         });
 });
 
+
+app.post('/sinReceta', middleware.verificaToken, (req, res) => {
+    var ings = req.body;
+    var ids = ings.map(el => el.ingrediente._id);
+    Ingrediente.deleteMany({ '_id': { $in: ids } }, (err, ingredientesBorrados) => {
+        if (!ingredientesBorrados) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Los ingredientes con los ids: [' + ids + '] no existen',
+                errors: { message: 'No existen los ingredientes con esos ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al borrar los ingredientes',
+                errors: err
+            });
+        }
+        res.status(200).json({
+            ok: true,
+            mensaje: 'ingredientes borradas',
+            ingredientes: ingredientesBorrados
+        });
+    });
+});
+
+
+// Añadir varios ingredientes
+app.post('/', middleware.verificaToken, async(req, res) => {
+    var body = req.body.nombres;
+    let names = body.filter(el => el != '');
+    let ings = [];
+    arrayE = await buscarIngredientes(names);
+    if (names.length == 0) {
+        res.status(201).json({
+            ok: true,
+            mensaje: 'No se han añadido ingredientes'
+        });
+    } else {
+        if (arrayE.length == names.length) {
+            res.status(201).json({
+                ok: true,
+                mensaje: 'Ingredientes guardados',
+                ingredientes: arrayE,
+                usuario: req.usuario.email
+            });
+        } else {
+            if (arrayE.length == 0) {
+                ings = await crearIngredientesNames(names, req.usuario);
+                res.status(201).json({
+                    ok: true,
+                    mensaje: 'Ingredientes guardados',
+                    ingredientes: ings,
+                    usuario: req.usuario.email
+                });
+            } else {
+                for (let ing of arrayE) {
+                    ings.push(ing);
+                }
+                namesE = ings.map(el => el.nombre);
+                namesB = names.filter(el => !namesE.includes(el));
+                arrayB = await crearIngredientesNames(namesB, req.usuario);
+                for (let ing of arrayB) {
+                    ings.push(ing);
+                }
+                res.status(201).json({
+                    ok: true,
+                    mensaje: 'Ingredientes guardados',
+                    ingredientes: ings
+                });
+            }
+        }
+    }
+});
+
+
 // AÑADIR ETIQUETAS
 app.put('/addTags', middleware.verificaToken, async(req, res) => {
 
@@ -239,55 +316,6 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 });
 
 
-// Añadir varios ingredientes
-app.post('/', middleware.verificaToken, async(req, res) => {
-    var body = req.body.nombres;
-    let names = body.filter(el => el != '');
-    let ings = [];
-    arrayE = await buscarIngredientes(names);
-    if (names.length == 0) {
-        res.status(201).json({
-            ok: true,
-            mensaje: 'No se han añadido ingredientes'
-        });
-    } else {
-        if (arrayE.length == names.length) {
-            res.status(201).json({
-                ok: true,
-                mensaje: 'Ingredientes guardados',
-                ingredientes: arrayE,
-                usuario: req.usuario.email
-            });
-        } else {
-            if (arrayE.length == 0) {
-                ings = await crearIngredientesNames(names, req.usuario);
-                res.status(201).json({
-                    ok: true,
-                    mensaje: 'Ingredientes guardados',
-                    ingredientes: ings,
-                    usuario: req.usuario.email
-                });
-            } else {
-                for (let ing of arrayE) {
-                    ings.push(ing);
-                }
-                namesE = ings.map(el => el.nombre);
-                namesB = names.filter(el => !namesE.includes(el));
-                arrayB = await crearIngredientesNames(namesB, req.usuario);
-                for (let ing of arrayB) {
-                    ings.push(ing);
-                }
-                res.status(201).json({
-                    ok: true,
-                    mensaje: 'Ingredientes guardados',
-                    ingredientes: ings
-                });
-            }
-        }
-    }
-});
-
-
 app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
 
@@ -313,6 +341,7 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
         });
     });
 });
+
 
 // CREACION DE RECETAS
 app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
@@ -350,24 +379,25 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
 function arrIngEn(array, ar) {
     for (i = 0; i < array.length; i++) {
         if (ar[i]) {
-            array[i] = crearIngReceta(ar[i]._id, array[i].nombre, array[i].cantidad, array[i].unidades, array[i].tipo);
+            array[i] = crearIngReceta(ar[i]._id, array[i].nombre, array[i].cantidad, array[i].unidades, array[i].tipo, array[i].ingredienteSustituible);
         }
     }
 }
 
 function arrIngBs(array, ar, pos) {
     for (i = 0; i < ar.length; i++) {
-        array[i + pos] = crearIngReceta(ar[i]._id, array[i + pos].nombre, array[i + pos].cantidad, array[i + pos].unidades, array[i + pos].tipo);
+        array[i + pos] = crearIngReceta(ar[i]._id, array[i + pos].nombre, array[i + pos].cantidad, array[i + pos].unidades, array[i + pos].tipo, array[i].ingredienteSustituible);
     }
 }
 
-function crearIngReceta(_id, nombre, cantidad, unidades, tipo) {
+function crearIngReceta(_id, nombre, cantidad, unidades, tipo, ingredienteSustituible) {
     var ingRec = {
         _id,
         nombre,
         cantidad,
         unidades,
-        tipo
+        tipo,
+        ingredienteSustituible
     };
     return ingRec;
 }
