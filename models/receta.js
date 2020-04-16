@@ -10,6 +10,7 @@ var NivelesValidos = {
 var recetaSchema = new Schema({
     nombre: { type: String, unique: true, required: [true, 'Nombre obligatorio'] },
     descripcion: { type: String, required: [true, 'Descripción obligatoria'] },
+    tipoRe: { type: String, required: [true, 'Tipo de la receta obligatorio'] },
     ingredientes: {
         type: [{
             id: { type: Schema.Types.ObjectId, ref: 'Ingrediente' },

@@ -121,6 +121,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 
         recetaEncontrada.nombre = body.nombre;
         recetaEncontrada.descripcion = body.descripcion;
+        recetaEncontrada.tipoRe = body.tipoRe;
         recetaEncontrada.ingredientes = body.ingredientes;
         recetaEncontrada.imagen = body.imagen;
         recetaEncontrada.pasos = body.pasos;
@@ -165,6 +166,7 @@ app.post('/', middleware.verificaToken, (req, res) => {
         var receta = new Receta({
             nombre: body.nombre,
             descripcion: body.descripcion,
+            tipoRe: body.tipoRe,
             ingredientes: ingredientes,
             imagen: body.imagen,
             pasos: body.pasos,
