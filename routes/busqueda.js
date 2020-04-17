@@ -5,6 +5,7 @@ var Receta = require('../models/receta');
 var Usuario = require('../models/usuario');
 var Ingrediente = require('../models/ingrediente');
 var Intolerancia = require('../models/intolerancia');
+var Etiqueta = require('../models/etiqueta');
 
 app.get('/all/:busqueda?', (req, res, next) => {
 
@@ -47,6 +48,9 @@ app.get('/:coleccion/:busqueda?', (req, res, next) => {
             break;
         case 'intolerancia':
             promesa = buscarIntolerancias(busqueda, regular, from, limit);
+            break;
+        case 'etiqueta':
+            promesa = buscarEtiquetas(busqueda, regular, from, limit);
             break;
         default:
             return res.status(400).json({
@@ -222,6 +226,43 @@ function buscarIntolerancias(busqueda, regex, from, limit) {
                             reject('Error al contar las intolerancias', err);
                         } else {
                             resolve([intolerancias, total]);
+                        }
+                    });
+                }
+            });
+    });
+}
+
+function buscarEtiquetas(busqueda, regex, from, limit) {
+    if (!busqueda) {
+        return new Promise((resolve, reject) => {
+            Etiqueta.find({}).skip(from)
+                .limit(limit).sort('nombre').exec((err, etiquetas) => {
+                    if (err) {
+                        reject('Error al cargar las etiquetas', err);
+                    } else {
+                        Etiqueta.countDocuments().exec((err, total) => {
+                            if (err) {
+                                reject('Error al contar las etiquetas', err);
+                            } else {
+                                resolve([etiquetas, total]);
+                            }
+                        });
+                    }
+                });
+        });
+    }
+    return new Promise((resolve, reject) => {
+        Etiqueta.find().or([{ nombre: regex }]).skip(from)
+            .limit(limit).sort('nombre').exec((err, etiquetas) => {
+                if (err) {
+                    reject('Error al cargar las etiquetas', err);
+                } else {
+                    Etiqueta.countDocuments().or([{ nombre: regex }]).exec((err, total) => {
+                        if (err) {
+                            reject('Error al contar las etiquetas', err);
+                        } else {
+                            resolve([etiquetas, total]);
                         }
                     });
                 }

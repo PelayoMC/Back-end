@@ -6,8 +6,14 @@ var app = express();
 var Etiqueta = require('../models/etiqueta');
 
 app.get('/', (req, res, next) => {
+    var desde = req.query.from || 0;
+    var limit = req.query.limit || 12;
+    desde = Number(desde);
+    limit = Number(limit);
 
     Etiqueta.find({})
+        .skip(desde)
+        .limit(limit)
         .sort('nombre')
         .exec((err, etiquetas) => {
             if (err) {
