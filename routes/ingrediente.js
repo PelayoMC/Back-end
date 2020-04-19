@@ -295,11 +295,11 @@ async function put(ing) {
     });
 }
 
-app.put('/:viejo/:nuevo', async(req, res, next) => {
+app.put('/mod/:viejo', middleware.verificaToken, (req, res) => {
     var viejo = req.params.viejo;
-    var nuevo = req.params.nuevo;
+    var nuevo = req.body.nuevo;
 
-    Receta.updateMany({ 'ingredientes.nombre': viejo }, { $set: { 'ingredientes.$.nombre': nuevo } },
+    Receta.updateMany({ 'ingredientes._id': viejo }, { $set: { 'ingredientes.$.nombre': nuevo } },
         (err, recetas) => {
             if (err) {
                 return res.status(500).json({

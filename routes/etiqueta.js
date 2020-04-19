@@ -36,35 +36,46 @@ app.get('/', (req, res, next) => {
         });
 });
 
-app.put('/:viejo/:nuevo', async(req, res, next) => {
+app.put('/mod/:viejo', (req, res, next) => {
     var viejo = req.params.viejo;
-    var nuevo = req.params.nuevo;
+    var nuevo = req.body.nuevo;
 
-    Ingrediente.updateMany({ noApto: viejo }, { $set: { noApto: nuevo } },
-        (err, ingredientes) => {
+    Etiqueta.find({ _id: viejo })
+        .exec((err, etiqueta) => {
             if (err) {
                 return res.status(500).json({
                     ok: false,
-                    mensaje: 'Error modificando ingredientes que contienen la etiqueta',
+                    mensaje: 'Error cargando etiquetas',
                     errors: err
                 });
             } else {
-                Intolerancia.updateMany({ noApto: viejo }, { $set: { noApto: nuevo } },
-                    (err, intolerancias) => {
+                Ingrediente.updateMany({ noApto: etiqueta[0].nombre }, { $set: { 'noApto.$': nuevo } },
+                    (err, ingredientes) => {
                         if (err) {
                             return res.status(500).json({
                                 ok: false,
-                                mensaje: 'Error modificando intolerancias que contienen la etiqueta',
+                                mensaje: 'Error modificando ingredientes que contienen la etiqueta',
                                 errors: err
                             });
                         } else {
-                            res.status(200).json({
-                                ok: true,
-                                mensaje: 'Ingredientes e intolerancias',
-                                ingredientes,
-                                intolerancias
-                            });
+                            Intolerancia.updateMany({ noApto: etiqueta[0].nombre }, { $set: { 'noApto.$': nuevo } },
+                                (err, intolerancias) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            ok: false,
+                                            mensaje: 'Error modificando intolerancias que contienen la etiqueta',
+                                            errors: err
+                                        });
+                                    } else {
+                                        res.status(200).json({
+                                            ok: true,
+                                            mensaje: 'Ingredientes e intolerancias',
+                                            ingredientes,
+                                            intolerancias
+                                        });
 
+                                    }
+                                });
                         }
                     });
             }
