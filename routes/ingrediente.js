@@ -35,6 +35,28 @@ app.get('/', (req, res, next) => {
         });
 });
 
+app.get('/:nombre', (req, res, next) => {
+    var nombre = req.params.nombre;
+
+    Receta.find({ 'ingredientes.nombre': nombre })
+        .exec((err, recetas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando recetas que contienen el ingrediente',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Recetas que contienen el ingrediente',
+                    ingrediente: nombre,
+                    recetas
+                });
+            }
+        });
+});
+
 // Get etiquetas
 app.post('/obtenerTags/', async(req, res, next) => {
     var ids = req.body.ings;
@@ -61,7 +83,7 @@ async function obtenerNoAptos(id) {
                     resolve(ingrediente[0]);
                 }
             });
-    })
+    });
 }
 
 app.post('/recetas', async(req, res, next) => {
@@ -272,6 +294,28 @@ async function put(ing) {
         });
     });
 }
+
+app.put('/:viejo/:nuevo', async(req, res, next) => {
+    var viejo = req.params.viejo;
+    var nuevo = req.params.nuevo;
+
+    Receta.updateMany({ 'ingredientes.nombre': viejo }, { $set: { 'ingredientes.$.nombre': nuevo } },
+        (err, recetas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error modificando recetas que contienen el ingrediente',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Recetas',
+                    recetas
+                });
+            }
+        });
+});
 
 
 // Modificar

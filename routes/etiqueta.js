@@ -1,9 +1,10 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
-var mongoose = require('mongoose');
 var app = express();
 
 var Etiqueta = require('../models/etiqueta');
+var Ingrediente = require('../models/ingrediente');
+var Intolerancia = require('../models/intolerancia');
 
 app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
@@ -31,6 +32,41 @@ app.get('/', (req, res, next) => {
                         total
                     });
                 });
+            }
+        });
+});
+
+app.put('/:viejo/:nuevo', async(req, res, next) => {
+    var viejo = req.params.viejo;
+    var nuevo = req.params.nuevo;
+
+    Ingrediente.updateMany({ noApto: viejo }, { $set: { noApto: nuevo } },
+        (err, ingredientes) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error modificando ingredientes que contienen la etiqueta',
+                    errors: err
+                });
+            } else {
+                Intolerancia.updateMany({ noApto: viejo }, { $set: { noApto: nuevo } },
+                    (err, intolerancias) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                mensaje: 'Error modificando intolerancias que contienen la etiqueta',
+                                errors: err
+                            });
+                        } else {
+                            res.status(200).json({
+                                ok: true,
+                                mensaje: 'Ingredientes e intolerancias',
+                                ingredientes,
+                                intolerancias
+                            });
+
+                        }
+                    });
             }
         });
 });
