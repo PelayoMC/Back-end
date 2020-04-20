@@ -127,6 +127,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         recetaEncontrada.pasos = body.pasos;
         recetaEncontrada.calorias = body.calorias;
         recetaEncontrada.nivel = body.nivel;
+        recetaEncontrada.ingredienteSustituible = body.ingredienteSustituible;
         recetaEncontrada.creador = req.usuario;
 
         recetaEncontrada.save((err, recetaGuardada) => {

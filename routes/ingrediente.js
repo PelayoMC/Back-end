@@ -392,10 +392,12 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
     let ings = req.body.ingredientes;
     let namesE = ings.map(el => el.nombre);
     let arrayE = await buscarIngredientes(namesE);
+    console.log(arrayE);
     let namesB = arrayE.map(el => el.nombre);
     let arrayB = ings.filter(element => !namesB.includes(element.nombre));
     if (ings.length === arrayE.length) {
         arrIngEn(ings, arrayE);
+        console.log(ings);
         res.status(200).json({
             ok: true,
             mensaje: 'Ingredientes encontrados',

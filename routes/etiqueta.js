@@ -125,6 +125,29 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
+    var nombre = req.body.nombre;
+    var etiqueta = new Etiqueta({
+        nombre
+    });
+    etiqueta.save((err, etiquetaGuardada) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Error al crear la etiqueta',
+                errors: err
+            });
+        }
+        res.status(201).json({
+            ok: true,
+            mensaje: 'Etiqueta guardada',
+            etiqueta: etiquetaGuardada,
+            usuarioToken: req.usuario.email
+        });
+    });
+});
+
+// Añadir
+app.post('/varios', middleware.verificaToken, (req, res) => {
     var body = req.body;
     var etiquetas = [];
     for (let item of body) {
@@ -168,11 +191,34 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
-        res.status(200).json({
-            ok: true,
-            mensaje: 'etiqueta borrada',
-            etiqueta: etiquetaBorrada
-        });
+        Ingrediente.updateMany({}, { $pullAll: { noApto: [etiquetaBorrada.nombre] } },
+            (err, ingredientes) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error modificando ingredientes que contienen la etiqueta',
+                        errors: err
+                    });
+                } else {
+                    Intolerancia.updateMany({}, { $pullAll: { noApto: [etiquetaBorrada.nombre] } },
+                        (err, intolerancias) => {
+                            if (err) {
+                                return res.status(500).json({
+                                    ok: false,
+                                    mensaje: 'Error modificando intolerancias que contienen la etiqueta',
+                                    errors: err
+                                });
+                            } else {
+                                res.status(200).json({
+                                    ok: true,
+                                    mensaje: 'etiqueta borrada',
+                                    etiqueta: etiquetaBorrada
+                                });
+
+                            }
+                        });
+                }
+            });
     });
 });
 
