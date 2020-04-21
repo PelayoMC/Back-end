@@ -35,44 +35,6 @@ app.get('/', (req, res, next) => {
         });
 });
 
-app.get('/sinReceta', (req, res) => {
-    Receta.find({})
-        .exec((err, recetas) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error cargando recetas',
-                    errors: err
-                });
-            } else {
-                igs = recetas.map(el => el.ingredientes);
-                Ingrediente.find().and([{ 'ingredientes.nombre': { '$ne': recetas.$.ingredientes.$.nombre } }, { 'ingredientes.nombre': { '$ne': recetas.$.ingredientes.$.ingredienteSustituible } }])
-                    .exec((err, ingredientes) => {
-                        if (err) {
-                            return res.status(500).json({
-                                ok: false,
-                                mensaje: 'Error cargando ingredientes',
-                                errors: err
-                            });
-                        } else {
-                            res.status(200).json({
-                                ok: true,
-                                mensaje: 'Recetas',
-                                ingredientes
-                            });
-                        }
-                    });
-            }
-        });
-
-    // res.status(200).json({
-    //     ok: true,
-    //     mensaje: 'Ingredientes',
-    //     ingredientes: ingredientes,
-    //     total
-    // });
-});
-
 app.get('/:nombre', (req, res, next) => {
     var nombre = req.params.nombre;
 
@@ -368,6 +330,49 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
             });
         });
     });
+});
+
+app.delete('/sinReceta', middleware.verificaToken, (req, res) => {
+    Receta.find({})
+        .exec((err, recetas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando recetas',
+                    errors: err
+                });
+            } else {
+                igs = recetas.map(el => el.ingredientes.map(el => el.nombre));
+                var merged = [].concat.apply([], igs);
+                Ingrediente.find({ 'nombre': { '$nin': merged } })
+                    .exec((err, ingredientes) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                mensaje: 'Error cargando ingredientes',
+                                errors: err
+                            });
+                        } else {
+                            ingredientes = ingredientes.map(el => el.nombre);
+                            Ingrediente.deleteMany({ 'nombre': { '$in': ingredientes } }).exec((err, ingredientesB) => {
+                                if (err) {
+                                    return res.status(500).json({
+                                        ok: false,
+                                        mensaje: 'Error borrando ingredientes',
+                                        errors: err
+                                    });
+                                } else {
+                                    res.status(200).json({
+                                        ok: true,
+                                        mensaje: 'Ingredientes borrados',
+                                        ingredientes: ingredientesB
+                                    });
+                                }
+                            });
+                        }
+                    });
+            }
+        });
 });
 
 
