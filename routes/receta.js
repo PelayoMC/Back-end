@@ -147,6 +147,51 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
+app.post('/filtrarTags', (req, res, next) => {
+    var tags = req.body.tags;
+
+    Receta.find({})
+        .exec((err, recetas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error filtrando las recetas',
+                    errors: err
+                });
+            } else {
+                igs = recetas.map(el => el.ingredientes);
+                var merged = [].concat.apply([], igs).map(el => el.nombre);
+                Ingrediente.find().and([{ nombre: { '$in': merged } }, { noApto: { '$all': tags } }])
+                    .exec((err, ig) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                mensaje: 'Error filtrando los ingredientes',
+                                errors: err
+                            });
+                        } else {
+                            Receta.find({ 'ingredientes.nombre': { '$in': ig.map(el => el.nombre) } })
+                                .exec((err, rec) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            ok: false,
+                                            mensaje: 'Error filtrando las recetas',
+                                            errors: err
+                                        });
+                                    } else {
+                                        res.status(200).json({
+                                            ok: true,
+                                            mensaje: 'Recetas',
+                                            rec
+                                        });
+                                    }
+                                });
+                        }
+                    });
+            }
+        });
+});
+
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;

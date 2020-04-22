@@ -58,33 +58,47 @@ app.get('/:nombre', (req, res, next) => {
 });
 
 // Get etiquetas
-app.post('/obtenerTags/', async(req, res, next) => {
+app.post('/obtenerTags/', (req, res, next) => {
     var ids = req.body.ings;
-    ar = [];
-    for (let id of ids) {
-        ar.push(await obtenerNoAptos(id));
-    }
-    res.status(200).json({
-        ok: true,
-        mensaje: 'Ingredientes',
-        etiquetas: ar.map(el => el.noApto)
-    });
+    Ingrediente.find({ _id: { '$in': ids } })
+        .exec((err, ingredientes) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error obteniendo las etiquetas de los ingredientes',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Ingredientes',
+                    etiquetas: ingredientes.map(el => el.noApto)
+                });
+            }
+        });
 });
 
-async function obtenerNoAptos(id) {
-    return new Promise((resolve, reject) => {
-        Ingrediente.find({ _id: id })
-            .exec((err, ingrediente) => {
-                if (err) {
-                    reject(err);
-                } else if (ingrediente.length === 0) {
-                    resolve('');
-                } else {
-                    resolve(ingrediente[0]);
-                }
-            });
-    });
-}
+
+app.post('/filtrarTags', (req, res, next) => {
+    var tags = req.body.tags;
+
+    Ingrediente.find({ noApto: { '$all': tags } })
+        .exec((err, ingredientes) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error filtrando los ingredientes',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Ingredientes',
+                    ingredientes
+                });
+            }
+        });
+});
 
 app.post('/recetas', async(req, res, next) => {
     var ings = req.body.ingredientes;
