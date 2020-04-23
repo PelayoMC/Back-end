@@ -78,28 +78,6 @@ app.post('/obtenerTags/', (req, res, next) => {
         });
 });
 
-
-app.post('/filtrarTags', (req, res, next) => {
-    var tags = req.body.tags;
-
-    Ingrediente.find({ noApto: { '$all': tags } })
-        .exec((err, ingredientes) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error filtrando los ingredientes',
-                    errors: err
-                });
-            } else {
-                res.status(200).json({
-                    ok: true,
-                    mensaje: 'Ingredientes',
-                    ingredientes
-                });
-            }
-        });
-});
-
 app.post('/recetas', async(req, res, next) => {
     var ings = req.body.ingredientes;
     var arrResp = [];

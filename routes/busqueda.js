@@ -107,18 +107,30 @@ function buscarUsuarios(regex, from, limit) {
 
 function buscarRecetas(regex, etiquetas, from, limit) {
     return new Promise((resolve, reject) => {
-        Receta.find().and([{ nombre: regex }, { noApto: { '$all': etiquetas } }]).skip(from)
-            .limit(limit).sort('nombre').exec((err, recetas) => {
+        Ingrediente.find({ noApto: { '$all': etiquetas } })
+            .exec((err, ig) => {
                 if (err) {
-                    reject('Error al cargar las recetas', err);
+                    reject('Error al filtrar los ingredientes', err);
                 } else {
-                    Receta.countDocuments().and([{ nombre: regex }, { noApto: { '$all': etiquetas } }]).exec((err, total) => {
-                        if (err) {
-                            reject('Error al contar las recetas', err);
-                        } else {
-                            resolve([recetas, total]);
-                        }
-                    });
+                    Receta.find().and([{ nombre: regex }, { 'ingredientes.nombre': { '$in': ig.map(el => el.nombre) } }])
+                        .skip(from)
+                        .limit(limit)
+                        .exec((err, recetas) => {
+                            if (err) {
+                                reject('Error al filtrar las recetas', err);
+                            } else {
+                                Receta.countDocuments().and([{ nombre: regex }, { 'ingredientes.nombre': { '$in': ig.map(el => el.nombre) } }])
+                                    .skip(from)
+                                    .limit(limit)
+                                    .exec((err, total) => {
+                                        if (err) {
+                                            reject('Error al contar las recetas', err);
+                                        } else {
+                                            resolve([recetas, total]);
+                                        }
+                                    });
+                            }
+                        });
                 }
             });
     });
