@@ -101,6 +101,29 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
+
+app.post('/nombre', (req, res, next) => {
+    var names = req.body.nombres;
+
+    Intolerancia.find({ 'nombre': { '$in': names } })
+        .exec((err, intolerancias) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando las intolerancias',
+                    errors: err
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    mensaje: 'Intolerancias',
+                    intolerancias
+                });
+            }
+        });
+});
+
+
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;

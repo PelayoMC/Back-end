@@ -29,6 +29,7 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
     var coleccion = req.params.coleccion;
     var busqueda = req.params.busqueda;
     var etiquetas = req.body.etiquetas;
+    var intolerancias = req.body.intolerancias;
     var from = req.query.from || 0;
     var limit = req.query.limit || 7;
     from = Number(from);
@@ -42,10 +43,10 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
             promesa = buscarUsuarios(regular, from, limit);
             break;
         case 'receta':
-            promesa = buscarRecetas(regular, etiquetas, from, limit);
+            promesa = buscarRecetas(regular, etiquetas, intolerancias, from, limit);
             break;
         case 'ingrediente':
-            promesa = buscarIngredientes(regular, etiquetas, from, limit);
+            promesa = buscarIngredientes(regular, etiquetas, intolerancias, from, limit);
             break;
         case 'intolerancia':
             promesa = buscarIntolerancias(regular, etiquetas, from, limit);
@@ -105,7 +106,7 @@ function buscarUsuarios(regex, from, limit) {
     });
 }
 
-function buscarRecetas(regex, etiquetas, from, limit) {
+function buscarRecetas(regex, etiquetas, intolerancias, from, limit) {
     return new Promise((resolve, reject) => {
         Ingrediente.find({ noApto: { '$all': etiquetas } })
             .exec((err, ig) => {
@@ -136,14 +137,25 @@ function buscarRecetas(regex, etiquetas, from, limit) {
     });
 }
 
-function buscarIngredientes(regex, etiquetas, from, limit) {
+function buscarIngredientes(regex, etiquetas, intolerancias, from, limit) {
+    var condiciones = [];
+    var i = 0;
+    condiciones[i++] = { nombre: regex };
+    if (etiquetas.length > 0) {
+        condiciones[i++] = { noApto: { '$all': etiquetas } };
+    }
+    if (intolerancias.length > 0) {
+        condiciones[i++] = { noApto: { '$nin': intolerancias } };
+    }
+    console.log(condiciones);
     return new Promise((resolve, reject) => {
-        Ingrediente.find().and([{ nombre: regex }, { noApto: { '$all': etiquetas } }]).skip(from)
+        Ingrediente.find().and(condiciones).skip(from)
             .limit(limit).sort('nombre').exec((err, ingredientes) => {
                 if (err) {
                     reject('Error al cargar los ingredientes', err);
                 } else {
-                    Ingrediente.countDocuments().and([{ nombre: regex }, { noApto: { '$all': etiquetas } }]).exec((err, total) => {
+                    console.log('eo' + ingredientes);
+                    Ingrediente.countDocuments().and(condiciones).exec((err, total) => {
                         if (err) {
                             reject('Error al contar los ingredientes', err);
                         } else {
