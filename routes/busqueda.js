@@ -107,8 +107,9 @@ function buscarUsuarios(regex, from, limit) {
 }
 
 function buscarRecetas(regex, etiquetas, intolerancias, from, limit) {
+    var condiciones = conditionsNoRegex(etiquetas, intolerancias);
     return new Promise((resolve, reject) => {
-        Ingrediente.find({ noApto: { '$all': etiquetas } })
+        Ingrediente.find().and(condiciones)
             .exec((err, ig) => {
                 if (err) {
                     reject('Error al filtrar los ingredientes', err);
@@ -138,23 +139,13 @@ function buscarRecetas(regex, etiquetas, intolerancias, from, limit) {
 }
 
 function buscarIngredientes(regex, etiquetas, intolerancias, from, limit) {
-    var condiciones = [];
-    var i = 0;
-    condiciones[i++] = { nombre: regex };
-    if (etiquetas.length > 0) {
-        condiciones[i++] = { noApto: { '$all': etiquetas } };
-    }
-    if (intolerancias.length > 0) {
-        condiciones[i++] = { noApto: { '$nin': intolerancias } };
-    }
-    console.log(condiciones);
+    var condiciones = conditions(regex, etiquetas, intolerancias);
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones).skip(from)
             .limit(limit).sort('nombre').exec((err, ingredientes) => {
                 if (err) {
                     reject('Error al cargar los ingredientes', err);
                 } else {
-                    console.log('eo' + ingredientes);
                     Ingrediente.countDocuments().and(condiciones).exec((err, total) => {
                         if (err) {
                             reject('Error al contar los ingredientes', err);
@@ -168,13 +159,14 @@ function buscarIngredientes(regex, etiquetas, intolerancias, from, limit) {
 }
 
 function buscarIntolerancias(regex, etiquetas, from, limit) {
+    var condiciones = conditions(regex, etiquetas, []);
     return new Promise((resolve, reject) => {
-        Intolerancia.find().and([{ nombre: regex }, { noApto: { '$all': etiquetas } }]).skip(from)
+        Intolerancia.find().and(condiciones).skip(from)
             .limit(limit).sort('nombre').exec((err, intolerancias) => {
                 if (err) {
                     reject('Error al cargar las intolerancias', err);
                 } else {
-                    Intolerancia.countDocuments().and([{ nombre: regex }, { noApto: { '$all': etiquetas } }]).exec((err, total) => {
+                    Intolerancia.countDocuments().and(condiciones).exec((err, total) => {
                         if (err) {
                             reject('Error al contar las intolerancias', err);
                         } else {
@@ -203,6 +195,31 @@ function buscarEtiquetas(regex, from, limit) {
                 }
             });
     });
+}
+
+function conditions(regex, etiquetas, intolerancias) {
+    var condiciones = [];
+    var i = 0;
+    condiciones[i++] = { nombre: regex };
+    if (etiquetas.length > 0) {
+        condiciones[i++] = { noApto: { '$all': etiquetas } };
+    }
+    if (intolerancias.length > 0) {
+        condiciones[i++] = { noApto: { '$nin': intolerancias } };
+    }
+    return condiciones;
+}
+
+function conditionsNoRegex(etiquetas, intolerancias) {
+    var condiciones = [];
+    var i = 0;
+    if (etiquetas.length > 0) {
+        condiciones[i++] = { noApto: { '$all': etiquetas } };
+    }
+    if (intolerancias.length > 0) {
+        condiciones[i++] = { noApto: { '$nin': intolerancias } };
+    }
+    return condiciones;
 }
 
 
