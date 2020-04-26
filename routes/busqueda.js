@@ -114,14 +114,14 @@ function buscarRecetas(regex, etiquetas, intolerancias, from, limit) {
                 if (err) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
-                    Receta.find().and([{ nombre: regex }, { 'ingredientes.nombre': { '$in': ig.map(el => el.nombre) } }])
+                    Receta.find().and([{ nombre: regex }, { 'ingredientes.nombre': { '$all': ig.map(el => el.nombre) } }])
                         .skip(from)
                         .limit(limit)
                         .exec((err, recetas) => {
                             if (err) {
                                 reject('Error al filtrar las recetas', err);
                             } else {
-                                Receta.countDocuments().and([{ nombre: regex }, { 'ingredientes.nombre': { '$in': ig.map(el => el.nombre) } }])
+                                Receta.countDocuments().and([{ nombre: regex }, { 'ingredientes.nombre': { '$all': ig.map(el => el.nombre) } }])
                                     .skip(from)
                                     .limit(limit)
                                     .exec((err, total) => {
@@ -218,6 +218,9 @@ function conditionsNoRegex(etiquetas, intolerancias) {
     }
     if (intolerancias.length > 0) {
         condiciones[i++] = { noApto: { '$nin': intolerancias } };
+    }
+    if (condiciones.length === 0) {
+        condiciones = {};
     }
     return condiciones;
 }
