@@ -25,7 +25,6 @@ app.get('/all/:busqueda?', (req, res, next) => {
 });
 
 app.post('/:coleccion/:busqueda?', (req, res, next) => {
-
     var coleccion = req.params.coleccion;
     var busqueda = req.params.busqueda;
     var etiquetas = req.body.etiquetas;
@@ -43,7 +42,7 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
             promesa = buscarUsuarios(regular, from, limit);
             break;
         case 'receta':
-            promesa = buscarRecetas(regular, etiquetas, intolerancias, from, limit);
+            promesa = buscarRecetas(regular, intolerancias, from, limit);
             break;
         case 'ingrediente':
             promesa = buscarIngredientes(regular, etiquetas, intolerancias, from, limit);
@@ -106,29 +105,44 @@ function buscarUsuarios(regex, from, limit) {
     });
 }
 
-function buscarRecetas(regex, etiquetas, intolerancias, from, limit) {
-    var condiciones = conditionsNoRegex(etiquetas, intolerancias);
+function buscarRecetas(regex, intolerancias, from, limit) {
+    var condiciones = conditionsNoRegex(intolerancias);
+    let checker = (arr, target) => target.every(v => arr.includes(v));
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones)
             .exec((err, ig) => {
                 if (err) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
-                    Receta.find().and([{ nombre: regex }, { 'ingredientes.nombre': { '$all': ig.map(el => el.nombre) } }])
+                    Receta.find({ nombre: regex })
                         .skip(from)
                         .limit(limit)
                         .exec((err, recetas) => {
                             if (err) {
                                 reject('Error al filtrar las recetas', err);
                             } else {
-                                Receta.countDocuments().and([{ nombre: regex }, { 'ingredientes.nombre': { '$all': ig.map(el => el.nombre) } }])
-                                    .skip(from)
-                                    .limit(limit)
-                                    .exec((err, total) => {
+                                let ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
+                                let ings = ig.map(el => el.nombre);
+                                let response = [];
+                                for (let i = 0; i < ingRe.length; i++) {
+                                    if (checker(ings, ingRe[i])) {
+                                        response.push(recetas[i]);
+                                    }
+                                }
+                                Receta.find({ nombre: regex })
+                                    .exec((err, recetas) => {
                                         if (err) {
                                             reject('Error al contar las recetas', err);
                                         } else {
-                                            resolve([recetas, total]);
+                                            let count = 0;
+                                            ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
+                                            ings = ig.map(el => el.nombre);
+                                            for (let i = 0; i < ingRe.length; i++) {
+                                                if (checker(ings, ingRe[i])) {
+                                                    count++;
+                                                }
+                                            }
+                                            resolve([response, count]);
                                         }
                                     });
                             }
@@ -210,18 +224,16 @@ function conditions(regex, etiquetas, intolerancias) {
     return condiciones;
 }
 
-function conditionsNoRegex(etiquetas, intolerancias) {
+function conditionsNoRegex(intolerancias) {
     var condiciones = [];
     var i = 0;
-    if (etiquetas.length > 0) {
-        condiciones[i++] = { noApto: { '$all': etiquetas } };
-    }
     if (intolerancias.length > 0) {
         condiciones[i++] = { noApto: { '$nin': intolerancias } };
     }
     if (condiciones.length === 0) {
         condiciones = {};
     }
+    console.log(condiciones);
     return condiciones;
 }
 

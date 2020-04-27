@@ -1,5 +1,6 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
+var mongoose = require('mongoose');
 var app = express();
 
 var Votacion = require('../models/votacion');
@@ -51,114 +52,94 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
     var body = req.body;
 
-    Votacion.findById(id, (err, intoleranciaEncontrada) => {
+    Votacion.findById(id, (err, votacionEncontrada) => {
         if (!intoleranciaEncontrada) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'La intolerancia con el id: [' + id + '] no existe',
-                errors: { message: 'No existe una intolerancia con ese ID' }
+                mensaje: 'La votacion con el id no existe',
+                errors: { message: 'No existe una votacion con ese ID' }
             });
         }
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al encontrar la intolerancia',
+                mensaje: 'Error al encontrar la votacion',
                 errors: err
             });
         }
 
-        intoleranciaEncontrada.nombre = body.nombre;
-        intoleranciaEncontrada.descripcion = body.descripcion;
-        intoleranciaEncontrada.noApto = body.noApto;
+        votacionEncontrada.total = body.total;
+        votacionEncontrada.puntos = body.puntos;
+        votacionEncontrada.receta = body.receta;
+        votacionEncontrada.usuarios = body.usuarios;
 
-        intoleranciaEncontrada.save((err, intoleranciaGuardada) => {
+        votacionEncontrada.save((err, votacionGuardada) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    mensaje: 'Error al actualizar la intolerancia',
+                    mensaje: 'Error al actualizar la votacion',
                     errors: err
                 });
             }
             res.status(200).json({
                 ok: true,
-                mensaje: 'Intolerancia actualizada correctamente',
-                intolerancia: intoleranciaGuardada
+                mensaje: 'Votacion actualizada correctamente',
+                votacion: votacionGuardada
             });
         });
     });
-});
-
-
-app.post('/nombre', (req, res, next) => {
-    var names = req.body.nombres;
-
-    Votacion.find({ 'nombre': { '$in': names } })
-        .exec((err, intolerancias) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error cargando las intolerancias',
-                    errors: err
-                });
-            } else {
-                res.status(200).json({
-                    ok: true,
-                    mensaje: 'Intolerancias',
-                    intolerancias
-                });
-            }
-        });
 });
 
 
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
-    var intolerancia = new Intolerancia({
-        nombre: body.nombre,
-        descripcion: body.descripcion,
-        noApto: body.noApto
+    var votacion = new Votacion({
+        total: 0,
+        puntos: 0,
+        receta: body.id == null ? null : mongoose.Types.ObjectId(body.id),
+        usuarios: []
     });
-    intolerancia.save((err, intoleranciaGuardada) => {
+    votacion.save((err, votacionGuardada) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Error al crear la intolerancia',
+                mensaje: 'Error al crear la votacion',
                 errors: err
             });
         }
         res.status(201).json({
             ok: true,
-            mensaje: 'Intolerancia guardada',
-            intolerancia: intoleranciaGuardada,
+            mensaje: 'Votacion guardada',
+            votacoin: votacionGuardada,
             usuarioToken: req.usuario.email
         });
     });
 });
 
-
+// Borrar por id de receta
 app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
 
-    Votacion.findByIdAndRemove(id, { useFindAndModify: false }, (err, intoleranciaBorrada) => {
-        if (!intoleranciaBorrada) {
+    Votacion.remove({ receta: id }, { justiOne: true }, (err, votacionBorrada) => {
+        if (!votacionBorrada) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'La intolerancia con el id: [' + id + '] no existe',
-                errors: { message: 'No existe una intolerancia con ese ID' }
+                mensaje: 'La votacion no existe',
+                errors: { message: 'No existe una intolerancia con una receta con ese ID' }
             });
         }
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al borrar la intolerancia',
+                mensaje: 'Error al borrar la votacion',
                 errors: err
             });
         }
         res.status(200).json({
             ok: true,
-            mensaje: 'Intolerancia borrada',
-            intolerancia: intoleranciaBorrada
+            mensaje: 'Votacion borrada',
+            votacion: votacionBorrada
         });
     });
 });

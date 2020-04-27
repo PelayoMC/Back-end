@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 var votacionSchema = new Schema({
     total: { type: Number, required: [true, 'Cantidad obligatoria'] },
     puntos: { type: Number, required: [true, 'Cantidad obligatoria'] },
-    receta: { type: Schema.Types.ObjectId, ref: 'Receta' },
+    receta: { type: Schema.Types.ObjectId, unique: true, ref: 'Receta' },
     usuarios: { type: [Schema.Types.ObjectId], ref: 'Usuario' }
 }, { collection: 'votaciones' });
 

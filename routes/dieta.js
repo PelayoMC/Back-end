@@ -2,23 +2,23 @@ var express = require('express');
 var middleware = require('../middlewares/autenticacion');
 var app = express();
 
-var Votacion = require('../models/votacion');
+var Dieta = require('../models/dieta');
 
-app.get('/receta/:id', (req, res, next) => {
+app.get('/admin/:id', (req, res, next) => {
     var id = req.params.id;
 
-    Votacion.find({ receta: id }, (err, votacion) => {
+    Dieta.find({ admin: id }, (err, dieta) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error cargando votacion',
+                mensaje: 'Error cargando dieta',
                 errors: err
             });
         } else {
             res.status(200).json({
                 ok: true,
-                mensaje: 'Votacion',
-                votacion
+                mensaje: 'Dieta',
+                dieta
             });
         }
     });
@@ -28,18 +28,18 @@ app.get('/receta/:id', (req, res, next) => {
 app.get('/usuario/:id', (req, res, next) => {
     var id = req.params.id;
 
-    Votacion.find({ usuarios: id }, (err, votacion) => {
+    Dieta.find({ usuario: id }, (err, dieta) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error cargando votacion',
+                mensaje: 'Error cargando dieta',
                 errors: err
             });
         } else {
             res.status(200).json({
                 ok: true,
-                mensaje: 'Votacion',
-                votacion
+                mensaje: 'Dieta',
+                dieta
             });
         }
     });
@@ -51,86 +51,63 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
     var body = req.body;
 
-    Votacion.findById(id, (err, intoleranciaEncontrada) => {
-        if (!intoleranciaEncontrada) {
+    Dieta.findById(id, (err, dietaEncontrada) => {
+        if (!dietaEncontrada) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'La intolerancia con el id: [' + id + '] no existe',
-                errors: { message: 'No existe una intolerancia con ese ID' }
+                mensaje: 'La dieta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una dieta con ese ID' }
             });
         }
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al encontrar la intolerancia',
+                mensaje: 'Error al encontrar la dieta',
                 errors: err
             });
         }
 
-        intoleranciaEncontrada.nombre = body.nombre;
-        intoleranciaEncontrada.descripcion = body.descripcion;
-        intoleranciaEncontrada.noApto = body.noApto;
+        dietaEncontrada.dieta = body.dieta;
+        dietaEncontrada.admin = body.admin;
+        dietaEncontrada.usuario = body.usuario;
 
-        intoleranciaEncontrada.save((err, intoleranciaGuardada) => {
+        dietaEncontrada.save((err, dietaGuardada) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    mensaje: 'Error al actualizar la intolerancia',
+                    mensaje: 'Error al actualizar la dieta',
                     errors: err
                 });
             }
             res.status(200).json({
                 ok: true,
-                mensaje: 'Intolerancia actualizada correctamente',
-                intolerancia: intoleranciaGuardada
+                mensaje: 'dieta actualizada correctamente',
+                dieta: dietaGuardada
             });
         });
     });
 });
 
-
-app.post('/nombre', (req, res, next) => {
-    var names = req.body.nombres;
-
-    Votacion.find({ 'nombre': { '$in': names } })
-        .exec((err, intolerancias) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error cargando las intolerancias',
-                    errors: err
-                });
-            } else {
-                res.status(200).json({
-                    ok: true,
-                    mensaje: 'Intolerancias',
-                    intolerancias
-                });
-            }
-        });
-});
-
-
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
-    var intolerancia = new Intolerancia({
-        nombre: body.nombre,
-        descripcion: body.descripcion,
-        noApto: body.noApto
+    var dieta = new Dieta({
+        dieta: null,
+        admin: null,
+        usuario: body.usuario
     });
-    intolerancia.save((err, intoleranciaGuardada) => {
+    dieta.save((err, dietaGuardada) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Error al crear la intolerancia',
+                mensaje: 'Error al crear la dieta',
                 errors: err
             });
         }
         res.status(201).json({
             ok: true,
-            mensaje: 'Intolerancia guardada',
-            intolerancia: intoleranciaGuardada,
+            mensaje: 'dieta guardada',
+            dieta: dietaGuardada,
             usuarioToken: req.usuario.email
         });
     });
@@ -140,25 +117,25 @@ app.post('/', middleware.verificaToken, (req, res) => {
 app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
 
-    Votacion.findByIdAndRemove(id, { useFindAndModify: false }, (err, intoleranciaBorrada) => {
-        if (!intoleranciaBorrada) {
+    Dieta.findByIdAndRemove(id, { useFindAndModify: false }, (err, dietaBorrada) => {
+        if (!dietaBorrada) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'La intolerancia con el id: [' + id + '] no existe',
-                errors: { message: 'No existe una intolerancia con ese ID' }
+                mensaje: 'La dieta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una dieta con ese ID' }
             });
         }
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al borrar la intolerancia',
+                mensaje: 'Error al borrar la dieta',
                 errors: err
             });
         }
         res.status(200).json({
             ok: true,
-            mensaje: 'Intolerancia borrada',
-            intolerancia: intoleranciaBorrada
+            mensaje: 'dieta borrada',
+            dieta: dietaBorrada
         });
     });
 });
