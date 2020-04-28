@@ -233,7 +233,6 @@ function conditionsNoRegex(intolerancias) {
     if (condiciones.length === 0) {
         condiciones = {};
     }
-    console.log(condiciones);
     return condiciones;
 }
 
