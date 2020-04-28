@@ -53,7 +53,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     var body = req.body;
 
     Votacion.findById(id, (err, votacionEncontrada) => {
-        if (!intoleranciaEncontrada) {
+        if (!votacionEncontrada) {
             return res.status(400).json({
                 ok: false,
                 mensaje: 'La votacion con el id no existe',
@@ -121,7 +121,7 @@ app.post('/', middleware.verificaToken, (req, res) => {
 app.delete('/:id', middleware.verificaToken, (req, res) => {
     var id = req.params.id;
 
-    Votacion.remove({ receta: id }, { justiOne: true }, (err, votacionBorrada) => {
+    Votacion.deleteOne({ receta: id }, { justiOne: true }, (err, votacionBorrada) => {
         if (!votacionBorrada) {
             return res.status(400).json({
                 ok: false,
