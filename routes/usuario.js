@@ -5,6 +5,8 @@ var app = express();
 
 
 var Usuario = require('../models/usuario');
+var Receta = require('../models/receta');
+var Intolerancia = require('../models/intolerancia');
 
 // ================================================
 // (GET) Obtener listado de usuarios
@@ -40,6 +42,110 @@ app.get('/', (req, res, next) => {
 });
 
 
+app.get('/recetas/:id', (req, res, next) => {
+
+    var id = req.params.id;
+    var desde = req.query.from || 0;
+    var limit = req.query.limit || 7;
+    desde = Number(desde);
+    limit = Number(limit);
+
+    Usuario.find({ _id: id })
+        .exec((err, user) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando usuarios',
+                    errors: err
+                });
+            } else {
+                const ar = user[0].recetasFavoritas;
+                Receta.find({ _id: { '$in': ar } })
+                    .skip(desde)
+                    .limit(limit)
+                    .exec((err, recetas) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                mensaje: 'Error cargando recetas',
+                                errors: err
+                            });
+                        } else {
+                            Receta.countDocuments({ _id: { '$in': ar } })
+                                .exec((err, total) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            ok: false,
+                                            mensaje: 'Error contando recetas',
+                                            errors: err
+                                        });
+                                    } else {
+                                        res.status(200).json({
+                                            ok: true,
+                                            mensaje: 'Recetas',
+                                            recetas,
+                                            total
+                                        });
+                                    }
+                                });
+                        }
+                    });
+            }
+        });
+});
+
+app.get('/intolerancias/:id', (req, res, next) => {
+
+    var id = req.params.id;
+    var desde = req.query.from || 0;
+    var limit = req.query.limit || 7;
+    desde = Number(desde);
+    limit = Number(limit);
+
+    Usuario.find({ _id: id })
+        .exec((err, user) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando usuarios',
+                    errors: err
+                });
+            } else {
+                const ar = user[0].misIntolerancias;
+                Intolerancia.find({ _id: { '$in': ar } })
+                    .skip(desde)
+                    .limit(limit)
+                    .exec((err, intolerancias) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                mensaje: 'Error cargando intolerancias',
+                                errors: err
+                            });
+                        } else {
+                            Intolerancia.countDocuments({ _id: { '$in': ar } })
+                                .exec((err, total) => {
+                                    if (err) {
+                                        return res.status(500).json({
+                                            ok: false,
+                                            mensaje: 'Error contando intolerancias',
+                                            errors: err
+                                        });
+                                    } else {
+                                        res.status(200).json({
+                                            ok: true,
+                                            mensaje: 'Intolerancias',
+                                            intolerancias,
+                                            total
+                                        });
+                                    }
+                                });
+                        }
+                    });
+            }
+        });
+});
+
 // ================================================
 // (PUT) Actualizar usuario existente
 // ================================================
@@ -68,6 +174,10 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         usuarioEncontrado.email = body.email;
         usuarioEncontrado.rol = body.rol;
         usuarioEncontrado.recetasFavoritas = body.recetasFavoritas;
+        usuarioEncontrado.misIntolerancias = body.misIntolerancias;
+        usuarioEncontrado.edad = body.edad;
+        usuarioEncontrado.altura = body.altura;
+        usuarioEncontrado.peso = body.peso;
 
         usuarioEncontrado.save((err, usuarioGuardado) => {
             if (err) {

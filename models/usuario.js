@@ -14,12 +14,11 @@ var usuarioSchema = new Schema({
     imagen: { type: String, required: false, default: null },
     rol: { type: String, required: true, default: "USER", enum: rolesValidos },
     google: { type: Boolean, default: false },
-    recetasFavoritas: {
-        type: [{
-            id: { type: Schema.Types.ObjectId, ref: 'Receta' }
-        }],
-        required: false
-    }
+    recetasFavoritas: { type: [Schema.Types.ObjectId], ref: 'Receta' },
+    misIntolerancias: { type: [Schema.Types.ObjectId], ref: 'Intolerancia' },
+    edad: { type: Number, min: 0, max: 100 },
+    altura: { type: Number, min: 0, max: 2.4 },
+    peso: { type: Number, min: 0, max: 180 },
 });
 
 usuarioSchema.plugin(uniqueValidator, { message: '[{PATH}] debe ser único' });
