@@ -173,6 +173,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         usuarioEncontrado.nombre = body.nombre;
         usuarioEncontrado.email = body.email;
         usuarioEncontrado.rol = body.rol;
+        usuarioEncontrado.dieta = body.dieta;
         usuarioEncontrado.recetasFavoritas = body.recetasFavoritas;
         usuarioEncontrado.misIntolerancias = body.misIntolerancias;
         usuarioEncontrado.edad = body.edad;

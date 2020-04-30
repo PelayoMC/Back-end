@@ -10,7 +10,8 @@ var dietaSchema = new Schema({
         }],
     },
     admin: { type: Schema.Types.ObjectId, ref: 'Usuario' },
-    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' }
+    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' },
+    feedback: { type: String }
 }, { collection: 'dietas' });
 
 dietaSchema.plugin(uniqueValidator, { message: '[{PATH}] debe ser único' });

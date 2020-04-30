@@ -14,6 +14,7 @@ var usuarioSchema = new Schema({
     imagen: { type: String, required: false, default: null },
     rol: { type: String, required: true, default: "USER", enum: rolesValidos },
     google: { type: Boolean, default: false },
+    dieta: { type: Schema.Types.ObjectId, ref: 'Dieta' },
     recetasFavoritas: { type: [Schema.Types.ObjectId], ref: 'Receta' },
     misIntolerancias: { type: [Schema.Types.ObjectId], ref: 'Intolerancia' },
     edad: { type: Number, min: 0, max: 100 },
