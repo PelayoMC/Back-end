@@ -3,6 +3,7 @@ var middleware = require('../middlewares/autenticacion');
 var app = express();
 
 var Dieta = require('../models/dieta');
+var Receta = require('../models/receta');
 
 app.get('/asignar', (req, res, next) => {
     var desde = req.query.from || 0;
@@ -49,7 +50,7 @@ app.get('/comentarios/:id', (req, res, next) => {
     limit = Number(limit);
     var id = req.params.id;
 
-    Dieta.find().and([{ admin: id }, { 'dieta.comentario': null }])
+    Dieta.find().and([{ admin: id }, { 'dieta.comentario': { '$ne': null } }])
         .skip(desde)
         .limit(limit)
         .exec((err, dietas) => {
@@ -60,7 +61,7 @@ app.get('/comentarios/:id', (req, res, next) => {
                     errors: err
                 });
             } else {
-                Dieta.countDocuments().and([{ admin: id }, { 'dieta.comentario': null }])
+                Dieta.countDocuments().and([{ admin: id }, { 'dieta.comentario': { '$ne': null } }])
                     .exec((err, total) => {
                         if (err) {
                             return res.status(500).json({
@@ -79,6 +80,37 @@ app.get('/comentarios/:id', (req, res, next) => {
                     });
             }
         });
+});
+
+app.get('/recetas/:id', (req, res, next) => {
+    var id = req.params.id;
+
+    Dieta.findById(id, (err, dieta) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error cargando dieta',
+                errors: err
+            });
+        } else {
+            let ar = dieta.dieta;
+            Receta.find({ _id: ar.map(el => el.receta) }, (err, recetas) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando dieta',
+                        errors: err
+                    });
+                } else {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Recetas',
+                        recetas
+                    });
+                }
+            });
+        }
+    });
 });
 
 app.get('/admin/:id', (req, res, next) => {
@@ -122,6 +154,47 @@ app.get('/usuario/:id', (req, res, next) => {
     });
 });
 
+// modificar solo el feedback
+app.put('/feedback/:id', middleware.verificaToken, (req, res) => {
+
+    var id = req.params.id;
+    var body = req.body;
+
+    Dieta.findById(id, (err, dietaEncontrada) => {
+        if (!dietaEncontrada) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'La dieta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una dieta con ese ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al encontrar la dieta',
+                errors: err
+            });
+        }
+        dietaEncontrada.dieta.forEach(el => el.comentario = null);
+        dietaEncontrada.feedback = body.feedback;
+
+        dietaEncontrada.save((err, dietaGuardada) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al actualizar la dieta',
+                    errors: err
+                });
+            }
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Dieta actualizada correctamente',
+                dieta: dietaGuardada
+            });
+        });
+    });
+});
+
 // Modificar
 app.put('/:id', middleware.verificaToken, (req, res) => {
 
@@ -147,6 +220,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         dietaEncontrada.dieta = body.dieta;
         dietaEncontrada.admin = body.admin;
         dietaEncontrada.usuario = body.usuario;
+        dietaEncontrada.feedback = body.feedback;
 
         dietaEncontrada.save((err, dietaGuardada) => {
             if (err) {
@@ -158,7 +232,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
             }
             res.status(200).json({
                 ok: true,
-                mensaje: 'dieta actualizada correctamente',
+                mensaje: 'Dieta actualizada correctamente',
                 dieta: dietaGuardada
             });
         });

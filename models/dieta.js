@@ -5,12 +5,12 @@ var Schema = mongoose.Schema;
 var dietaSchema = new Schema({
     dieta: {
         type: [{
-            id: { type: Schema.Types.ObjectId, ref: 'Receta' },
+            receta: { type: Schema.Types.ObjectId, ref: 'Receta' },
             comentario: { type: String }
         }],
     },
     admin: { type: Schema.Types.ObjectId, ref: 'Usuario' },
-    usuario: { type: Schema.Types.ObjectId, ref: 'Usuario' },
+    usuario: { type: Schema.Types.ObjectId, unique: true, ref: 'Usuario' },
     feedback: { type: String }
 }, { collection: 'dietas' });
 
