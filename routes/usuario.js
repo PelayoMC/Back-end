@@ -16,7 +16,7 @@ app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
     desde = Number(desde);
 
-    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas')
+    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
         .sort('email') // -email para asc
         .skip(desde)
         .limit(7)
@@ -50,7 +50,7 @@ app.get('/recetas/:id', (req, res, next) => {
     desde = Number(desde);
     limit = Number(limit);
 
-    Usuario.find({ _id: id })
+    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
         .exec((err, user) => {
             if (err) {
                 return res.status(500).json({
@@ -102,7 +102,7 @@ app.get('/intolerancias/:id', (req, res, next) => {
     desde = Number(desde);
     limit = Number(limit);
 
-    Usuario.find({ _id: id })
+    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
         .exec((err, user) => {
             if (err) {
                 return res.status(500).json({
@@ -144,6 +144,30 @@ app.get('/intolerancias/:id', (req, res, next) => {
                     });
             }
         });
+});
+
+
+app.get('/:id', (req, res, next) => {
+
+    var id = req.params.id;
+
+    Usuario.findOne({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
+        .exec(
+            (err, user) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando usuario',
+                        errors: err
+                    });
+                } else {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Usuario',
+                        usuario: user
+                    });
+                }
+            });
 });
 
 // ================================================
