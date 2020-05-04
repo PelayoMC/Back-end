@@ -29,6 +29,7 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
     var busqueda = req.params.busqueda;
     var etiquetas = req.body.etiquetas;
     var intolerancias = req.body.intolerancias;
+    var tipos = req.body.tipos;
     var from = req.query.from || 0;
     var limit = req.query.limit || 7;
     from = Number(from);
@@ -42,7 +43,7 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
             promesa = buscarUsuarios(regular, from, limit);
             break;
         case 'receta':
-            promesa = buscarRecetas(regular, intolerancias, from, limit);
+            promesa = buscarRecetas(regular, intolerancias, tipos, from, limit);
             break;
         case 'ingrediente':
             promesa = buscarIngredientes(regular, etiquetas, intolerancias, from, limit);
@@ -105,7 +106,7 @@ function buscarUsuarios(regex, from, limit) {
     });
 }
 
-function buscarRecetas(regex, intolerancias, from, limit) {
+function buscarRecetas(regex, intolerancias, tipos, from, limit) {
     var condiciones = conditionsNoRegex(intolerancias);
     let checker = (arr, target) => target.every(v => arr.includes(v));
     return new Promise((resolve, reject) => {
@@ -114,7 +115,7 @@ function buscarRecetas(regex, intolerancias, from, limit) {
                 if (err) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
-                    Receta.find({ nombre: regex })
+                    Receta.find().and([{ nombre: regex }, { tipoRe: { '$in': tipos } }])
                         .skip(from)
                         .limit(limit)
                         .exec((err, recetas) => {
@@ -129,7 +130,7 @@ function buscarRecetas(regex, intolerancias, from, limit) {
                                         response.push(recetas[i]);
                                     }
                                 }
-                                Receta.find({ nombre: regex })
+                                Receta.find().and([{ nombre: regex }, { tipoRe: { '$in': tipos } }])
                                     .exec((err, recetas) => {
                                         if (err) {
                                             reject('Error al contar las recetas', err);

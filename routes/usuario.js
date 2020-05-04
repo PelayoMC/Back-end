@@ -203,6 +203,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         usuarioEncontrado.edad = body.edad;
         usuarioEncontrado.altura = body.altura;
         usuarioEncontrado.peso = body.peso;
+        usuarioEncontrado.notificaciones = body.notificaciones;
 
         usuarioEncontrado.save((err, usuarioGuardado) => {
             if (err) {

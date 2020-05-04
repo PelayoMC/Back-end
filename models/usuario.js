@@ -20,6 +20,12 @@ var usuarioSchema = new Schema({
     edad: { type: Number, min: 0, max: 100 },
     altura: { type: Number, min: 0, max: 2.4 },
     peso: { type: Number, min: 0, max: 180 },
+    notificaciones: {
+        type: {
+            titulo: { type: String, required: [true, 'Titulo obligatorio'] },
+            mensaje: { type: String, required: [true, 'Mensaje obligatorio'] },
+        }
+    }
 });
 
 usuarioSchema.plugin(uniqueValidator, { message: '[{PATH}] debe ser único' });
