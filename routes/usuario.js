@@ -16,7 +16,7 @@ app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
     desde = Number(desde);
 
-    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
+    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso')
         .sort('email') // -email para asc
         .skip(desde)
         .limit(7)
@@ -50,7 +50,7 @@ app.get('/recetas/:id', (req, res, next) => {
     desde = Number(desde);
     limit = Number(limit);
 
-    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
+    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso')
         .exec((err, user) => {
             if (err) {
                 return res.status(500).json({
@@ -102,7 +102,7 @@ app.get('/intolerancias/:id', (req, res, next) => {
     desde = Number(desde);
     limit = Number(limit);
 
-    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
+    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso')
         .exec((err, user) => {
             if (err) {
                 return res.status(500).json({
@@ -151,7 +151,7 @@ app.get('/:id', (req, res, next) => {
 
     var id = req.params.id;
 
-    Usuario.findOne({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias dieta edad altura peso')
+    Usuario.findOne({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso')
         .exec(
             (err, user) => {
                 if (err) {
@@ -235,7 +235,10 @@ app.post('/', (req, res) => {
         contraseña: bcrypt.hashSync(body.contraseña, 10),
         imagen: body.imagen,
         rol: body.rol,
-        recetasFavoritas: body.recetasFavoritas
+        dieta: null,
+        recetasFavoritas: [],
+        misIntolerancias: [],
+        notificaciones: []
     });
 
     usuario.save((err, usuarioGuardado) => {

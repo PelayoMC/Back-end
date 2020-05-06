@@ -154,6 +154,27 @@ app.get('/usuario/:id', (req, res, next) => {
     });
 });
 
+
+app.get('/:id', (req, res, next) => {
+    var id = req.params.id;
+
+    Dieta.find({ _id: id }, (err, dieta) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error cargando dieta',
+                errors: err
+            });
+        } else {
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Dieta',
+                dieta
+            });
+        }
+    });
+});
+
 // modificar solo el feedback
 app.put('/feedback/:id', middleware.verificaToken, (req, res) => {
 
@@ -217,10 +238,8 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
             });
         }
 
-        dietaEncontrada.dieta = body.dieta;
-        dietaEncontrada.admin = body.admin;
-        dietaEncontrada.usuario = body.usuario;
-        dietaEncontrada.feedback = body.feedback;
+        dietaEncontrada.dieta = body.dieta.dieta;
+        dietaEncontrada.admin = body.dieta.admin;
 
         dietaEncontrada.save((err, dietaGuardada) => {
             if (err) {

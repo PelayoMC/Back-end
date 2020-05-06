@@ -147,6 +147,34 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
+app.post('/ids', async(req, res, next) => {
+    let ids = req.body.ids;
+
+    respuesta = [];
+    for (let id of ids) {
+        let r = await obtenerReceta(id);
+        respuesta.push(r);
+    }
+    res.status(200).json({
+        ok: true,
+        mensaje: 'Recetas',
+        recetas: respuesta
+    });
+});
+
+async function obtenerReceta(id) {
+    return new Promise((resolve, reject) => {
+        Receta.findOne({ _id: id })
+            .exec((err, receta) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(receta);
+                }
+            });
+    })
+}
+
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
