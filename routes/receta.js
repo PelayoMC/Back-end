@@ -1,6 +1,7 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
 var mongoose = require('mongoose');
+var fs = require('fs');
 var app = express();
 
 var Receta = require('../models/receta');
@@ -281,6 +282,16 @@ app.delete('/', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
+        var antiguoPath = './uploads/usuarios/' + recetasBorrada.imagen;
+
+        if (fs.existsSync(antiguoPath)) {
+            fs.unlink(antiguoPath, (err) => {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+
         res.status(200).json({
             ok: true,
             mensaje: 'Recetas borradas',

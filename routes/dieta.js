@@ -50,7 +50,7 @@ app.get('/comentarios/:id', (req, res, next) => {
     limit = Number(limit);
     var id = req.params.id;
 
-    Dieta.find().and([{ admin: id }, { 'dieta.comentario': { '$ne': null } }])
+    Dieta.find({ admin: id })
         .skip(desde)
         .limit(limit)
         .exec((err, dietas) => {
@@ -61,7 +61,8 @@ app.get('/comentarios/:id', (req, res, next) => {
                     errors: err
                 });
             } else {
-                Dieta.countDocuments().and([{ admin: id }, { 'dieta.comentario': { '$ne': null } }])
+                let respuesta = dietas.filter(el => el.dieta.some(el => el.comentario !== null));
+                Dieta.find({ admin: id })
                     .exec((err, total) => {
                         if (err) {
                             return res.status(500).json({
@@ -70,11 +71,12 @@ app.get('/comentarios/:id', (req, res, next) => {
                                 errors: err
                             });
                         } else {
+                            let respuestaCount = dietas.filter(el => el.dieta.some(el => el.comentario !== null));
                             res.status(200).json({
                                 ok: true,
                                 mensaje: 'Dieta',
-                                dietas,
-                                total
+                                dietas: respuesta,
+                                total: respuestaCount.length
                             });
                         }
                     });
@@ -238,8 +240,10 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
             });
         }
 
-        dietaEncontrada.dieta = body.dieta.dieta;
-        dietaEncontrada.admin = body.dieta.admin;
+        dietaEncontrada.dieta = body.dieta;
+        dietaEncontrada.admin = body.admin;
+        dietaEncontrada.usuario = body.usuario;
+        dietaEncontrada.feedback = body.feedback;
 
         dietaEncontrada.save((err, dietaGuardada) => {
             if (err) {

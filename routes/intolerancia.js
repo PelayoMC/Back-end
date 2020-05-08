@@ -1,5 +1,6 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
+var fs = require('fs');
 var app = express();
 
 var Intolerancia = require('../models/intolerancia');
@@ -166,6 +167,16 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
+        var antiguoPath = './uploads/usuarios/' + intoleranciaBorrada.imagen;
+
+        if (fs.existsSync(antiguoPath)) {
+            fs.unlink(antiguoPath, (err) => {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+
         res.status(200).json({
             ok: true,
             mensaje: 'Intolerancia borrada',
