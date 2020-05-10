@@ -27,9 +27,9 @@ app.get('/all/:busqueda?', (req, res, next) => {
 app.post('/:coleccion/:busqueda?', (req, res, next) => {
     var coleccion = req.params.coleccion;
     var busqueda = req.params.busqueda;
-    var etiquetas = req.body.etiquetas;
-    var intolerancias = req.body.intolerancias;
-    var tipos = req.body.tipos;
+    var etiquetas = req.body.etiquetas || [];
+    var intolerancias = req.body.intolerancias || [];
+    var tipos = req.body.tipos || [];
     var from = req.query.from || 0;
     var limit = req.query.limit || 7;
     from = Number(from);
@@ -39,6 +39,9 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
     var promesa;
 
     switch (coleccion) {
+        case 'descubrir':
+            promesa = descubrir(regular, intolerancias, tipos, from, limit);
+            break;
         case 'usuario':
             promesa = buscarUsuarios(regular, from, limit);
             break;
@@ -84,6 +87,54 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
     });
 });
 
+
+function descubrir(regex, intolerancias, tipos, from, limit) {
+    var condiciones = conditions(regex, [], intolerancias);
+    var condTipos = conditionsTiposNoRegex(tipos);
+    let checker = (arr, target) => target.every(v => arr.includes(v));
+    return new Promise((resolve, reject) => {
+        Ingrediente.find().and(condiciones)
+            .exec((err, ig) => {
+                if (err) {
+                    reject('Error al filtrar los ingredientes', err);
+                } else {
+                    Receta.find(condTipos)
+                        .skip(from)
+                        .limit(limit)
+                        .exec((err, recetas) => {
+                            if (err) {
+                                reject('Error al filtrar las recetas', err);
+                            } else {
+                                let ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
+                                let ings = ig.map(el => el.nombre);
+                                let response = [];
+                                for (let i = 0; i < ingRe.length; i++) {
+                                    if (checker(ings, ingRe[i])) {
+                                        response.push(recetas[i]);
+                                    }
+                                }
+                                Receta.find(condTipos)
+                                    .exec((err, recetas) => {
+                                        if (err) {
+                                            reject('Error al contar las recetas', err);
+                                        } else {
+                                            let count = 0;
+                                            ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
+                                            ings = ig.map(el => el.nombre);
+                                            for (let i = 0; i < ingRe.length; i++) {
+                                                if (checker(ings, ingRe[i])) {
+                                                    count++;
+                                                }
+                                            }
+                                            resolve([response, count]);
+                                        }
+                                    });
+                            }
+                        });
+                }
+            });
+    });
+}
 
 
 function buscarUsuarios(regex, from, limit) {
@@ -230,6 +281,28 @@ function conditionsNoRegex(intolerancias) {
     var i = 0;
     if (intolerancias.length > 0) {
         condiciones[i++] = { noApto: { '$nin': intolerancias } };
+    }
+    if (condiciones.length === 0) {
+        condiciones = {};
+    }
+    return condiciones;
+}
+
+function conditionsTipos(regex, tipos) {
+    var condiciones = [];
+    var i = 0;
+    condiciones[i++] = { nombre: regex };
+    if (tipos.length > 0) {
+        condiciones[i++] = { tipoRe: { '$in': tipos } };
+    }
+    return condiciones;
+}
+
+function conditionsTiposNoRegex(tipos) {
+    var condiciones = [];
+    var i = 0;
+    if (tipos.length > 0) {
+        condiciones[i++] = { tipoRe: { '$in': tipos } };
     }
     if (condiciones.length === 0) {
         condiciones = {};
