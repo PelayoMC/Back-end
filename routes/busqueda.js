@@ -107,11 +107,15 @@ function descubrir(regex, intolerancias, tipos, from, limit) {
                             } else {
                                 let ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
                                 let ings = ig.map(el => el.nombre);
-                                let response = [];
+                                let recipes = [];
                                 for (let i = 0; i < ingRe.length; i++) {
                                     if (checker(ings, ingRe[i])) {
-                                        response.push(recetas[i]);
+                                        recipes.push(recetas[i]);
                                     }
+                                }
+                                let response = {
+                                    recetas: recipes,
+                                    ingredientes: ig
                                 }
                                 Receta.find(condTipos)
                                     .exec((err, recetas) => {
