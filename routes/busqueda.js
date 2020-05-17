@@ -163,6 +163,7 @@ function buscarUsuarios(regex, from, limit) {
 
 function buscarRecetas(regex, intolerancias, tipos, from, limit) {
     var condiciones = conditionsNoRegex(intolerancias);
+    var condicionesTipo = conditionsTipos(regex, tipos);
     let checker = (arr, target) => target.every(v => arr.includes(v));
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones)
@@ -170,7 +171,7 @@ function buscarRecetas(regex, intolerancias, tipos, from, limit) {
                 if (err) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
-                    Receta.find().and([{ nombre: regex }, { tipoRe: { '$in': tipos } }])
+                    Receta.find().and(condicionesTipo)
                         .skip(from)
                         .limit(limit)
                         .exec((err, recetas) => {
@@ -185,7 +186,7 @@ function buscarRecetas(regex, intolerancias, tipos, from, limit) {
                                         response.push(recetas[i]);
                                     }
                                 }
-                                Receta.find().and([{ nombre: regex }, { tipoRe: { '$in': tipos } }])
+                                Receta.find().and(condicionesTipo)
                                     .exec((err, recetas) => {
                                         if (err) {
                                             reject('Error al contar las recetas', err);
@@ -303,13 +304,9 @@ function conditionsTipos(regex, tipos) {
 }
 
 function conditionsTiposNoRegex(tipos) {
-    var condiciones = [];
-    var i = 0;
+    var condiciones = {};
     if (tipos.length > 0) {
-        condiciones[i++] = { tipoRe: { '$in': tipos } };
-    }
-    if (condiciones.length === 0) {
-        condiciones = {};
+        condiciones = { tipoRe: { '$in': tipos } };
     }
     return condiciones;
 }
