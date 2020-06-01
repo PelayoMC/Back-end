@@ -167,7 +167,7 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
-        var antiguoPath = './uploads/usuarios/' + intoleranciaBorrada.imagen;
+        var antiguoPath = './uploads/intolerancias/' + intoleranciaBorrada.imagen;
 
         if (fs.existsSync(antiguoPath)) {
             fs.unlink(antiguoPath, (err) => {

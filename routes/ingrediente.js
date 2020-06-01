@@ -35,6 +35,29 @@ app.get('/', (req, res, next) => {
         });
 });
 
+app.get('/all', (req, res, next) => {
+    Ingrediente.find({})
+        .sort('nombre')
+        .exec((err, ingredientes) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando ingredientes',
+                    errors: err
+                });
+            } else {
+                Ingrediente.countDocuments({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Ingredientes',
+                        ingredientes: ingredientes,
+                        total
+                    });
+                });
+            }
+        });
+});
+
 app.get('/:nombre', (req, res, next) => {
     var nombre = req.params.nombre;
 

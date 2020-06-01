@@ -254,6 +254,15 @@ app.delete('/:id', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
+        var antiguoPath = './uploads/recetas/' + recetaBorrada.imagen;
+        if (fs.existsSync(antiguoPath)) {
+            fs.unlink(antiguoPath, (err) => {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+
         res.status(200).json({
             ok: true,
             mensaje: 'Receta borrada',
@@ -282,8 +291,7 @@ app.delete('/', middleware.verificaToken, (req, res) => {
                 errors: err
             });
         }
-        var antiguoPath = './uploads/usuarios/' + recetasBorrada.imagen;
-
+        var antiguoPath = './uploads/recetas/' + recetasBorrada.imagen;
         if (fs.existsSync(antiguoPath)) {
             fs.unlink(antiguoPath, (err) => {
                 if (err) {

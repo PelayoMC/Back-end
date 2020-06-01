@@ -14,7 +14,8 @@ var middleware = require('../middlewares/autenticacion');
 
 // RENOVACION TOKEN
 app.get('/renuevatoken', middleware.verificaToken, (req, res) => {
-    var token = jsonwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 14400 });
+    // 14400
+    var token = jsonwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 5 });
     res.status(200).json({
         ok: true,
         token: token
