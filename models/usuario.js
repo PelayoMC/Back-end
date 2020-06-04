@@ -20,6 +20,7 @@ var usuarioSchema = new Schema({
     edad: { type: Number, min: 0, max: 100 },
     altura: { type: Number, min: 0, max: 2.4 },
     peso: { type: Number, min: 0, max: 180 },
+    observaciones: { type: String, required: false },
     notificaciones: {
         type: [{
             titulo: { type: String, required: [true, 'Titulo obligatorio'] },
