@@ -228,6 +228,32 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // ================================================
 // (POST) Añadir nuevo usuario
 // ================================================
+app.post('/all', (req, res) => {
+    var body = req.body;
+    console.log(body);
+
+    Usuario.find({ _id: { '$in': body } }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
+        .sort('email') // -email para asc
+        .exec(
+            (err, users) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando usuarios',
+                        errors: err
+                    });
+                } else {
+                    console.log(users);
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Usuarios',
+                        usuarios: users
+                    });
+                }
+            });
+});
+
+
 app.post('/', (req, res) => {
     var body = req.body;
 

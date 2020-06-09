@@ -36,6 +36,30 @@ app.get('/', (req, res, next) => {
         });
 });
 
+app.get('/all', (req, res, next) => {
+
+    Etiqueta.find({})
+        .sort('nombre')
+        .exec((err, etiquetas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando etiquetas',
+                    errors: err
+                });
+            } else {
+                Etiqueta.countDocuments({}, (err, total) => {
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'etiquetas',
+                        etiquetas: etiquetas,
+                        total
+                    });
+                });
+            }
+        });
+});
+
 app.put('/mod/:viejo', (req, res, next) => {
     var viejo = req.params.viejo;
     var nuevo = req.body.nuevo;
@@ -156,6 +180,7 @@ app.post('/varios', middleware.verificaToken, (req, res) => {
         };
         etiquetas.push(etiqueta);
     }
+    console.log(etiquetas);
     Etiqueta.create(etiquetas, (err, etiquetasGuardada) => {
         if (err) {
             return res.status(400).json({
