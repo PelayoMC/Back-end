@@ -230,7 +230,6 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 // ================================================
 app.post('/all', (req, res) => {
     var body = req.body;
-    console.log(body);
 
     Usuario.find({ _id: { '$in': body } }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
         .sort('email') // -email para asc
@@ -243,7 +242,6 @@ app.post('/all', (req, res) => {
                         errors: err
                     });
                 } else {
-                    console.log(users);
                     res.status(200).json({
                         ok: true,
                         mensaje: 'Usuarios',

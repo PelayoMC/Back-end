@@ -180,7 +180,6 @@ app.post('/varios', middleware.verificaToken, (req, res) => {
         };
         etiquetas.push(etiqueta);
     }
-    console.log(etiquetas);
     Etiqueta.create(etiquetas, (err, etiquetasGuardada) => {
         if (err) {
             return res.status(400).json({
