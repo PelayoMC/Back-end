@@ -83,6 +83,7 @@ app.get('/:nombre', (req, res, next) => {
 // Get etiquetas
 app.post('/obtenerTags/', (req, res, next) => {
     var ids = req.body.ings;
+
     Ingrediente.find({ _id: { '$in': ids } })
         .sort('nombre')
         .exec((err, ingredientes) => {
@@ -444,7 +445,7 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
         }
         let arr = await crearIngredientes(arrayB);
         arrIngEn(ings, arrayE);
-        arrIngBs(ings, arr, arrayE.length);
+        arrIngEn(ings, arr);
         res.status(200).json({
             ok: true,
             mensaje: 'Ingredientes encontrados/creados',
@@ -456,15 +457,10 @@ app.post('/obtenerIds', middleware.verificaToken, async(req, res) => {
 function arrIngEn(array, ar) {
     array.sort((a, b) => a.nombre.localeCompare(b.nombre));
     for (i = 0; i < array.length; i++) {
-        if (ar[i]) {
-            array[i] = crearIngReceta(ar[i]._id, array[i].nombre, array[i].cantidad, array[i].unidades, array[i].tipo, array[i].ingredienteSustituible);
+        let encontrado = ar.find(el => el.nombre === array[i].nombre);
+        if (encontrado) {
+            array[i] = crearIngReceta(encontrado._id, array[i].nombre, array[i].cantidad, array[i].unidades, array[i].tipo, array[i].ingredienteSustituible);
         }
-    }
-}
-
-function arrIngBs(array, ar, pos) {
-    for (i = 0; i < ar.length; i++) {
-        array[i + pos] = crearIngReceta(ar[i]._id, array[i + pos].nombre, array[i + pos].cantidad, array[i + pos].unidades, array[i + pos].tipo, array[i].ingredienteSustituible);
     }
 }
 
