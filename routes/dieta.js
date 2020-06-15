@@ -222,7 +222,7 @@ app.put('/feedback/:id', middleware.verificaToken, (req, res) => {
 app.put('/:id', middleware.verificaToken, (req, res) => {
 
     var id = req.params.id;
-    var body = req.body;
+    var body = req.body.dieta;
 
     Dieta.findById(id, (err, dietaEncontrada) => {
         if (!dietaEncontrada) {
