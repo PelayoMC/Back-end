@@ -109,14 +109,14 @@ function descubrir(regex, intolerancias, tipos, from, limit) {
                                 let ings = ig.map(el => el.nombre);
                                 let recipes = [];
                                 for (let i = 0; i < ingRe.length; i++) {
-                                    if (checker(ings, ingRe[i])) {
+                                    if (checker(ingRe[i], ings)) {
                                         recipes.push(recetas[i]);
                                     }
                                 }
                                 let response = {
                                     recetas: recipes,
                                     ingredientes: ig
-                                }
+                                };
                                 Receta.find(condTipos)
                                     .exec((err, recetas) => {
                                         if (err) {
