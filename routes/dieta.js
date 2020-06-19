@@ -43,6 +43,45 @@ app.get('/asignar', (req, res, next) => {
         });
 });
 
+app.get('/asignadas/:id', (req, res, next) => {
+    var desde = req.query.from || 0;
+    var limit = req.query.limit || 9;
+    desde = Number(desde);
+    limit = Number(limit);
+    var id = req.params.id;
+
+    Dieta.find({ admin: id })
+        .skip(desde)
+        .limit(limit)
+        .exec((err, dietas) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando dieta',
+                    errors: err
+                });
+            } else {
+                Dieta.countDocuments({ admin: id })
+                    .exec((err, total) => {
+                        if (err) {
+                            return res.status(500).json({
+                                ok: false,
+                                mensaje: 'Error cargando dieta',
+                                errors: err
+                            });
+                        } else {
+                            res.status(200).json({
+                                ok: true,
+                                mensaje: 'Dieta',
+                                dietas,
+                                total
+                            });
+                        }
+                    });
+            }
+        });
+});
+
 app.get('/comentarios/:id', (req, res, next) => {
     var desde = req.query.from || 0;
     var limit = req.query.limit || 9;

@@ -4,8 +4,12 @@ var Schema = mongoose.Schema;
 
 var rolesValidos = {
     values: ['ADMIN', 'USER'],
-    message: '{VALUE} no es un rol permitido'
-}
+    message: '`{VALUE}` no es un rol permitido'
+};
+var sexosValidos = {
+    values: ['H', 'M'],
+    message: '`{VALUE}` no es un sexo permitido'
+};
 
 var usuarioSchema = new Schema({
     nombre: { type: String, required: [true, 'Nombre obligatorio'] },
@@ -17,9 +21,11 @@ var usuarioSchema = new Schema({
     dieta: { type: Schema.Types.ObjectId, ref: 'Dieta' },
     recetasFavoritas: { type: [Schema.Types.ObjectId], ref: 'Receta' },
     misIntolerancias: { type: [Schema.Types.ObjectId], ref: 'Intolerancia' },
+    sexo: { type: String, enum: sexosValidos },
     edad: { type: Number, min: 0, max: 100 },
     altura: { type: Number, min: 0, max: 2.4 },
     peso: { type: Number, min: 0, max: 180 },
+    ejercicio: { type: Number, min: 0, max: 2 },
     observaciones: { type: String, required: false },
     notificaciones: {
         type: [{

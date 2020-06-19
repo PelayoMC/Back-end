@@ -17,7 +17,7 @@ app.get('/', (req, res, next) => {
     var desde = req.query.from || 0;
     desde = Number(desde);
 
-    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
+    Usuario.find({}, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
         .sort('email') // -email para asc
         .skip(desde)
         .limit(7)
@@ -51,7 +51,7 @@ app.get('/recetas/:id', (req, res, next) => {
     desde = Number(desde);
     limit = Number(limit);
 
-    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
+    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
         .exec((err, user) => {
             if (err) {
                 return res.status(500).json({
@@ -103,7 +103,7 @@ app.get('/intolerancias/:id', (req, res, next) => {
     desde = Number(desde);
     limit = Number(limit);
 
-    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
+    Usuario.find({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
         .exec((err, user) => {
             if (err) {
                 return res.status(500).json({
@@ -152,7 +152,7 @@ app.get('/:id', (req, res, next) => {
 
     var id = req.params.id;
 
-    Usuario.findOne({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
+    Usuario.findOne({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
         .exec(
             (err, user) => {
                 if (err) {
@@ -201,9 +201,11 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         usuarioEncontrado.dieta = body.dieta;
         usuarioEncontrado.recetasFavoritas = body.recetasFavoritas;
         usuarioEncontrado.misIntolerancias = body.misIntolerancias;
+        usuarioEncontrado.sexo = body.sexo;
         usuarioEncontrado.edad = body.edad;
         usuarioEncontrado.altura = body.altura;
         usuarioEncontrado.peso = body.peso;
+        usuarioEncontrado.ejercicio = body.ejercicio;
         usuarioEncontrado.observaciones = body.observaciones;
         usuarioEncontrado.notificaciones = body.notificaciones;
 
@@ -231,7 +233,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
 app.post('/all', (req, res) => {
     var body = req.body;
 
-    Usuario.find({ _id: { '$in': body } }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta edad altura peso observaciones')
+    Usuario.find({ _id: { '$in': body } }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
         .sort('email') // -email para asc
         .exec(
             (err, users) => {
