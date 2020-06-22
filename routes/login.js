@@ -2,8 +2,10 @@ var express = require('express');
 var app = express();
 var bcrypt = require('bcryptjs');
 var jsonwt = require('jsonwebtoken');
+var nodemailer = require('nodemailer');
 var SEED = require('../config/config').SEED;
 var CLIENT_ID = require('../config/config').CLIENT_ID;
+var FRONT_URL = require('../config/config').FRONT_URL;
 
 var Usuario = require('../models/usuario');
 
@@ -128,6 +130,46 @@ app.post('/', (req, res) => {
             usuario: usuarioObtenido,
             token: token,
             id: usuarioObtenido._id
+        });
+
+    });
+});
+
+app.post('/emailReset', (req, res) => {
+    var body = req.body;
+    console.log(body.email);
+
+    Usuario.findOne({ email: body.email }, (err, usuarioObtenido) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al buscar usuario',
+                errors: err
+            });
+        }
+        var transporter = nodemailer.createTransport({
+            service: 'Outlook365',
+            port: 465,
+            auth: {
+                user: 'UO250985@uniovi.es',
+                pass: 'elchulo14_'
+            }
+        });
+        var mailOptions = {
+            to: usuarioObtenido.email,
+            from: 'UO250985@uniovi.es',
+            subject: 'Reset de contraseña',
+            text: 'Mensaje para resetear la contraseña\n\n' +
+                'Haz click en el siguiente link para blablablabla\n\n' +
+                FRONT_URL + 'reset/' + usuarioObtenido._id + '\n\n' +
+                'Si no has solicitado esto no te rayes makinón.\n'
+        };
+        transporter.sendMail(mailOptions, (err, info) => {
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Mensaje enviado al destinatario',
+                usuario: usuarioObtenido.email
+            });
         });
 
     });
