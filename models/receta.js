@@ -32,6 +32,7 @@ var recetaSchema = new Schema({
         required: [true, 'Pasos obligatorios']
     },
     nivel: { type: String, required: [true, 'Nivel obligatorio'], enum: NivelesValidos },
+    puntuacion: { type: Number, required: false, default: 0 },
     creador: { type: Schema.Types.ObjectId, ref: 'Usuario' }
 }, { collection: 'recetas' });
 

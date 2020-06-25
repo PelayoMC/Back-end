@@ -148,6 +148,46 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
+app.put('/votes/:id', (req, res) => {
+
+    var id = req.params.id;
+    var body = req.body;
+
+    Receta.findById(id, (err, recetaEncontrada) => {
+        if (!recetaEncontrada) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'La receta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una receta con ese ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al encontrar la receta',
+                errors: err
+            });
+        }
+
+        recetaEncontrada.puntuacion = body.puntuacion;
+
+        recetaEncontrada.save((err, recetaGuardada) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al actualizar la receta',
+                    errors: err
+                });
+            }
+            res.status(200).json({
+                ok: true,
+                mensaje: 'Receta actualizada correctamente',
+                receta: recetaGuardada
+            });
+        });
+    });
+});
+
 app.post('/ids', async(req, res, next) => {
     let ids = req.body.ids;
 

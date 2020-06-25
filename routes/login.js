@@ -135,9 +135,49 @@ app.post('/', (req, res) => {
     });
 });
 
+
+// AUTENTICACION NORMAL CON PASS ENCRIPTADA
+app.post('/loginReset', (req, res) => {
+    var body = req.body;
+
+    Usuario.findOne({ email: body.email }, (err, usuarioObtenido) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al buscar usuario',
+                errors: err
+            });
+        }
+        if (!usuarioObtenido) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Credenciales incorrectas - email',
+                errors: { message: 'Email incorrecto' }
+            });
+        }
+        if (body.contraseña != usuarioObtenido.contraseña) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Credenciales incorrectas - contraseña',
+                errors: { message: 'Contraseña incorrecta' }
+            });
+        }
+        var token = jsonwt.sign({ usuario: usuarioObtenido }, SEED, { expiresIn: 14400 }); // 4h
+        res.status(200).json({
+            ok: true,
+            mensaje: 'Login correcto del usuario',
+            usuario: usuarioObtenido,
+            token: token,
+            id: usuarioObtenido._id
+        });
+
+    });
+});
+
+
 app.post('/emailReset', (req, res) => {
     var body = req.body;
-    console.log(body.email);
+    var mensaje = body.mensaje;
 
     Usuario.findOne({ email: body.email }, (err, usuarioObtenido) => {
         if (err) {
@@ -158,11 +198,11 @@ app.post('/emailReset', (req, res) => {
         var mailOptions = {
             to: usuarioObtenido.email,
             from: 'UO250985@uniovi.es',
-            subject: 'Reset de contraseña',
-            text: 'Mensaje para resetear la contraseña\n\n' +
-                'Haz click en el siguiente link para blablablabla\n\n' +
+            subject: mensaje.titulo,
+            text: mensaje.mensaje1 +
+                mensaje.mensaje2 +
                 FRONT_URL + 'reset/' + usuarioObtenido._id + '\n\n' +
-                'Si no has solicitado esto no te rayes makinón.\n'
+                mensaje.mensaje3
         };
         transporter.sendMail(mailOptions, (err, info) => {
             res.status(200).json({

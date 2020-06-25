@@ -152,7 +152,7 @@ app.get('/:id', (req, res, next) => {
 
     var id = req.params.id;
 
-    Usuario.findOne({ _id: id }, 'nombre email imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
+    Usuario.findOne({ _id: id }, 'nombre email contraseña imagen rol google recetasFavoritas misIntolerancias notificaciones dieta sexo edad altura peso ejercicio observaciones')
         .exec(
             (err, user) => {
                 if (err) {

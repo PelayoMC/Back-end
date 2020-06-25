@@ -30,23 +30,24 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
     var etiquetas = req.body.etiquetas || [];
     var intolerancias = req.body.intolerancias || [];
     var tipos = req.body.tipos || [];
+    var orden = req.body.orden || 'nombre';
     var from = req.query.from || 0;
     var limit = req.query.limit || 7;
     from = Number(from);
     limit = Number(limit);
-    var regular = new RegExp(busqueda, 'i');
+    var regular = busqueda ? new RegExp(busqueda, 'i') : new RegExp(busqueda);
 
     var promesa;
 
     switch (coleccion) {
         case 'descubrir':
-            promesa = descubrir(regular, intolerancias, tipos, from, limit);
+            promesa = descubrir(regular, intolerancias, tipos, orden, from, limit);
             break;
         case 'usuario':
             promesa = buscarUsuarios(regular, from, limit);
             break;
         case 'receta':
-            promesa = buscarRecetas(regular, intolerancias, tipos, from, limit);
+            promesa = buscarRecetas(regular, intolerancias, tipos, orden, from, limit);
             break;
         case 'ingrediente':
             promesa = buscarIngredientes(regular, etiquetas, intolerancias, from, limit);
@@ -88,10 +89,10 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
 });
 
 
-function descubrir(regex, intolerancias, tipos, from, limit) {
+function descubrir(regex, intolerancias, tipos, orden, from, limit) {
     var condiciones = conditions(regex, [], intolerancias);
     var condTipos = conditionsTiposNoRegex(tipos);
-    let checker = (arr, target) => target.every(v => arr.includes(v));
+    let checker = (arr, target) => target.some(v => arr.includes(v));
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones)
             .exec((err, ig) => {
@@ -99,6 +100,7 @@ function descubrir(regex, intolerancias, tipos, from, limit) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
                     Receta.find(condTipos)
+                        .sort(orden)
                         .skip(from)
                         .limit(limit)
                         .exec((err, recetas) => {
@@ -161,10 +163,10 @@ function buscarUsuarios(regex, from, limit) {
     });
 }
 
-function buscarRecetas(regex, intolerancias, tipos, from, limit) {
+function buscarRecetas(regex, intolerancias, tipos, orden, from, limit) {
     var condiciones = conditionsNoRegex(intolerancias);
     var condicionesTipo = conditionsTipos(regex, tipos);
-    let checker = (arr, target) => target.every(v => arr.includes(v));
+    let checker = (arr, target) => target.some(v => arr.includes(v));
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones)
             .exec((err, ig) => {
@@ -172,6 +174,7 @@ function buscarRecetas(regex, intolerancias, tipos, from, limit) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
                     Receta.find().and(condicionesTipo)
+                        .sort(orden)
                         .skip(from)
                         .limit(limit)
                         .exec((err, recetas) => {
@@ -182,7 +185,7 @@ function buscarRecetas(regex, intolerancias, tipos, from, limit) {
                                 let ings = ig.map(el => el.nombre);
                                 let response = [];
                                 for (let i = 0; i < ingRe.length; i++) {
-                                    if (checker(ings, ingRe[i])) {
+                                    if (checker(ingRe[i], ings)) {
                                         response.push(recetas[i]);
                                     }
                                 }
