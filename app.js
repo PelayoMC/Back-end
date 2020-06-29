@@ -59,6 +59,6 @@ app.use('/imagen', imageRoute);
 app.use('/', appRoute);
 
 // Escuchar peticiones
-app.listen(app.get('port'), () => {
+app.listen(app.get('port') || process.env.PORT, () => {
     console.log("Servidor activo en el puerto " + app.get('port') + ' \x1b[32m%s\x1b[0m', '[ONLINE]');
 });
