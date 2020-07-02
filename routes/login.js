@@ -201,7 +201,7 @@ app.post('/emailReset', (req, res) => {
             subject: mensaje.titulo,
             text: mensaje.mensaje1 +
                 mensaje.mensaje2 +
-                FRONT_URL + 'reset/' + usuarioObtenido._id + '\n\n' +
+                FRONT_URL + '/reset/' + usuarioObtenido._id + '\n\n' +
                 mensaje.mensaje3
         };
         transporter.sendMail(mailOptions, (err, info) => {

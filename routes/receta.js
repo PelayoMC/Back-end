@@ -16,6 +16,7 @@ app.get('/', (req, res, next) => {
     Receta.find({})
         .skip(desde)
         .limit(limit)
+        .collation({ locale: "en" })
         .sort('nombre')
         .exec((err, recetas) => {
             if (err) {
@@ -267,7 +268,7 @@ function obtenerIngredientes(ids) {
     return new Promise((resolve, reject) => {
         Ingrediente.find({
             '_id': { $in: ids }
-        }).exec((err, ingredientesInt) => {
+        }).sort('nombre').exec((err, ingredientesInt) => {
             if (err) {
                 reject('Error cargando los ingredientes', err);
             }
