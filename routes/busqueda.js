@@ -88,11 +88,25 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
     });
 });
 
+async function ingsDeIntolerancia(intolerancias) {
+    return new Promise((resolve, reject) => {
+        Ingrediente.find({ noApto: { '$in': intolerancias } })
+            .exec((err, ig) => {
+                if (err) {
+                    reject('Error al filtrar los ingredientes', err);
+                } else {
+                    resolve(ig.map(el => el.nombre));
+                }
+            });
+    });
+}
 
-function descubrir(regex, intolerancias, tipos, orden, from, limit) {
+
+async function descubrir(regex, intolerancias, tipos, orden, from, limit) {
+    var ingsInto = await ingsDeIntolerancia(intolerancias);
     var condiciones = conditions(regex, [], intolerancias);
     var condTipos = conditionsTiposNoRegex(tipos);
-    let checker = (arr, target) => target.some(v => arr.includes(v));
+    let checker = (arr, target) => target.some(v => arr.includes(v)) && arr.every(v => !ingsInto.includes(v));
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones)
             .exec((err, ig) => {
@@ -100,6 +114,7 @@ function descubrir(regex, intolerancias, tipos, orden, from, limit) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
                     Receta.find(condTipos)
+                        .collation({ locale: "en" })
                         .sort(orden)
                         .skip(from)
                         .limit(limit)
@@ -163,10 +178,11 @@ function buscarUsuarios(regex, from, limit) {
     });
 }
 
-function buscarRecetas(regex, intolerancias, tipos, orden, from, limit) {
+async function buscarRecetas(regex, intolerancias, tipos, orden, from, limit) {
+    var ingsInto = await ingsDeIntolerancia(intolerancias);
     var condiciones = conditionsNoRegex(intolerancias);
     var condicionesTipo = conditionsTipos(regex, tipos);
-    let checker = (arr, target) => target.some(v => arr.includes(v));
+    let checker = (arr, target) => target.some(v => arr.includes(v)) && arr.every(v => !ingsInto.includes(v));
     return new Promise((resolve, reject) => {
         Ingrediente.find().and(condiciones)
             .exec((err, ig) => {
@@ -174,6 +190,7 @@ function buscarRecetas(regex, intolerancias, tipos, orden, from, limit) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
                     Receta.find().and(condicionesTipo)
+                        .collation({ locale: "en" })
                         .sort(orden)
                         .skip(from)
                         .limit(limit)
