@@ -39,6 +39,7 @@ mongoose.connection.openUri('mongodb://UO250985:tfgUO250985@ds227654.mlab.com:27
         throw err;
     } else {
         console.log("Conexión a la base de datos: \x1b[32m%s\x1b[0m", "[ESTABLECIDA]");
+        console.log("Servidor Remoto");
     }
 });
 
