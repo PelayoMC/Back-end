@@ -41,13 +41,13 @@ app.post('/:coleccion/:busqueda?', (req, res, next) => {
 
     switch (coleccion) {
         case 'descubrir':
-            promesa = descubrir(regular, intolerancias, tipos, orden, from, limit);
+            promesa = descubrir(regular, intolerancias, etiquetas, tipos, orden, from, limit);
             break;
         case 'usuario':
             promesa = buscarUsuarios(regular, from, limit);
             break;
         case 'receta':
-            promesa = buscarRecetas(regular, intolerancias, tipos, orden, from, limit);
+            promesa = buscarRecetas(regular, intolerancias, etiquetas, tipos, orden, from, limit);
             break;
         case 'ingrediente':
             promesa = buscarIngredientes(regular, etiquetas, intolerancias, from, limit);
@@ -102,9 +102,9 @@ async function ingsDeIntolerancia(intolerancias) {
 }
 
 
-async function descubrir(regex, intolerancias, tipos, orden, from, limit) {
+async function descubrir(regex, intolerancias, etiquetas, tipos, orden, from, limit) {
     var ingsInto = await ingsDeIntolerancia(intolerancias);
-    var condiciones = conditions(regex, [], intolerancias);
+    var condiciones = conditions(regex, etiquetas, intolerancias);
     var condTipos = conditionsTiposNoRegex(tipos);
     let checker = (arr, target) => target.some(v => arr.includes(v)) && arr.every(v => !ingsInto.includes(v));
     return new Promise((resolve, reject) => {
@@ -178,9 +178,9 @@ function buscarUsuarios(regex, from, limit) {
     });
 }
 
-async function buscarRecetas(regex, intolerancias, tipos, orden, from, limit) {
+async function buscarRecetas(regex, intolerancias, etiquetas, tipos, orden, from, limit) {
     var ingsInto = await ingsDeIntolerancia(intolerancias);
-    var condiciones = conditionsNoRegex(intolerancias);
+    var condiciones = conditionsNoRegex(intolerancias, etiquetas);
     var condicionesTipo = conditionsTipos(regex, tipos);
     let checker = (arr, target) => target.some(v => arr.includes(v)) && arr.every(v => !ingsInto.includes(v));
     return new Promise((resolve, reject) => {
@@ -301,9 +301,12 @@ function conditions(regex, etiquetas, intolerancias) {
     return condiciones;
 }
 
-function conditionsNoRegex(intolerancias) {
+function conditionsNoRegex(intolerancias, etiquetas) {
     var condiciones = [];
     var i = 0;
+    if (etiquetas.length > 0) {
+        condiciones[i++] = { noApto: { '$all': etiquetas } };
+    }
     if (intolerancias.length > 0) {
         condiciones[i++] = { noApto: { '$nin': intolerancias } };
     }
