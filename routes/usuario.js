@@ -1,6 +1,7 @@
 var express = require('express');
 var bcrypt = require('bcryptjs');
 var middleware = require('../middlewares/autenticacion');
+var nodemailer = require('nodemailer');
 var fs = require('fs');
 var app = express();
 
@@ -255,7 +256,8 @@ app.post('/all', (req, res) => {
 
 
 app.post('/', (req, res) => {
-    var body = req.body;
+    var body = req.body.usuario;
+    var mensaje = req.body.mensaje;
 
     var usuario = new Usuario({
         nombre: body.nombre,
@@ -277,11 +279,28 @@ app.post('/', (req, res) => {
                 errors: err
             });
         }
-        res.status(201).json({
-            ok: true,
-            mensaje: 'Usuario guardado',
-            usuario: usuarioGuardado,
-            usuarioToken: req.usuario
+        var transporter = nodemailer.createTransport({
+            service: 'Outlook365',
+            port: 465,
+            auth: {
+                user: 'UO250985@uniovi.es',
+                pass: 'elchulo14_'
+            }
+        });
+        var mailOptions = {
+            to: usuarioGuardado.email,
+            from: 'UO250985@uniovi.es',
+            subject: mensaje.titulo,
+            text: mensaje.mensaje1 +
+                mensaje.mensaje2
+        };
+        transporter.sendMail(mailOptions, (err, info) => {
+            res.status(201).json({
+                ok: true,
+                mensaje: 'Usuario guardado',
+                usuario: usuarioGuardado,
+                usuarioToken: req.usuario
+            });
         });
     });
 });
