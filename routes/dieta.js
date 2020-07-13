@@ -1,7 +1,9 @@
 var express = require('express');
 var middleware = require('../middlewares/autenticacion');
+var nodemailer = require('nodemailer');
 var app = express();
 
+var Usuario = require('../models/usuario');
 var Dieta = require('../models/dieta');
 var Receta = require('../models/receta');
 
@@ -301,6 +303,137 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
     });
 });
 
+
+app.put('/asignar/:id', middleware.verificaToken, (req, res) => {
+
+    var id = req.params.id;
+    var body = req.body.dieta;
+    var mensaje = req.body.mensaje;
+
+    Dieta.findById(id, (err, dietaEncontrada) => {
+        if (!dietaEncontrada) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'La dieta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una dieta con ese ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al encontrar la dieta',
+                errors: err
+            });
+        }
+
+        dietaEncontrada.dieta = body.dieta;
+        dietaEncontrada.admin = body.admin;
+        dietaEncontrada.usuario = body.usuario;
+        dietaEncontrada.feedback = body.feedback;
+
+        dietaEncontrada.save((err, dietaGuardada) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al actualizar la dieta',
+                    errors: err
+                });
+            }
+            Usuario.find({ _id: body.usuario })
+                .exec((err, usuario) => {
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            mensaje: 'Error cargando usuarios',
+                            errors: err
+                        });
+                    } else {
+                        var transporter = nodemailer.createTransport({
+                            service: 'Outlook365',
+                            port: 465,
+                            auth: {
+                                user: 'UO250985@uniovi.es',
+                                pass: 'elchulo14_'
+                            }
+                        });
+                        var mailOptions = {
+                            to: usuario[0].email,
+                            from: 'UO250985@uniovi.es',
+                            subject: mensaje.titulo,
+                            text: mensaje.mensaje1 +
+                                mensaje.mensaje2
+                        };
+                        transporter.sendMail(mailOptions, (err, info) => {
+                            res.status(200).json({
+                                ok: true,
+                                mensaje: 'Dieta actualizada correctamente',
+                                dieta: dietaGuardada
+                            });
+                        });
+                    }
+                });
+        });
+    });
+});
+
+
+app.post('/delete/:id', middleware.verificaToken, (req, res) => {
+    var id = req.params.id;
+    var usuario = req.body.usuario;
+    var mensaje = req.body.mensaje;
+
+    Dieta.findByIdAndRemove(id, { useFindAndModify: false }, (err, dietaBorrada) => {
+        if (!dietaBorrada) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'La dieta con el id: [' + id + '] no existe',
+                errors: { message: 'No existe una dieta con ese ID' }
+            });
+        }
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al borrar la dieta',
+                errors: err
+            });
+        }
+        Usuario.find({ _id: usuario })
+            .exec((err, usuario) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: false,
+                        mensaje: 'Error cargando usuarios',
+                        errors: err
+                    });
+                } else {
+                    var transporter = nodemailer.createTransport({
+                        service: 'Outlook365',
+                        port: 465,
+                        auth: {
+                            user: 'UO250985@uniovi.es',
+                            pass: 'elchulo14_'
+                        }
+                    });
+                    var mailOptions = {
+                        to: usuario[0].email,
+                        from: 'UO250985@uniovi.es',
+                        subject: mensaje.titulo,
+                        text: mensaje.mensaje1 +
+                            mensaje.mensaje2
+                    };
+                    transporter.sendMail(mailOptions, (err, info) => {
+                        res.status(200).json({
+                            ok: true,
+                            mensaje: 'dieta borrada',
+                            dieta: dietaBorrada
+                        });
+                    });
+                }
+            });
+    });
+});
+
+
 // Añadir
 app.post('/', middleware.verificaToken, (req, res) => {
     var body = req.body;
@@ -322,33 +455,6 @@ app.post('/', middleware.verificaToken, (req, res) => {
             mensaje: 'dieta guardada',
             dieta: dietaGuardada,
             usuarioToken: req.usuario.email
-        });
-    });
-});
-
-
-app.delete('/:id', middleware.verificaToken, (req, res) => {
-    var id = req.params.id;
-
-    Dieta.findByIdAndRemove(id, { useFindAndModify: false }, (err, dietaBorrada) => {
-        if (!dietaBorrada) {
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'La dieta con el id: [' + id + '] no existe',
-                errors: { message: 'No existe una dieta con ese ID' }
-            });
-        }
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                mensaje: 'Error al borrar la dieta',
-                errors: err
-            });
-        }
-        res.status(200).json({
-            ok: true,
-            mensaje: 'dieta borrada',
-            dieta: dietaBorrada
         });
     });
 });

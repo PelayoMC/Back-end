@@ -6,6 +6,7 @@ var Usuario = require('../models/usuario');
 var Ingrediente = require('../models/ingrediente');
 var Intolerancia = require('../models/intolerancia');
 var Etiqueta = require('../models/etiqueta');
+const { Mongoose } = require('mongoose');
 
 app.get('/all/:busqueda?', (req, res, next) => {
 
@@ -116,8 +117,6 @@ async function descubrir(regex, intolerancias, etiquetas, tipos, orden, from, li
                     Receta.find(condTipos)
                         .collation({ locale: "en" })
                         .sort(orden)
-                        .skip(from)
-                        .limit(limit)
                         .exec((err, recetas) => {
                             if (err) {
                                 reject('Error al filtrar las recetas', err);
@@ -134,6 +133,7 @@ async function descubrir(regex, intolerancias, etiquetas, tipos, orden, from, li
                                     recetas: recipes,
                                     ingredientes: ig
                                 };
+                                response.recetas = response.recetas.slice(from, limit);
                                 Receta.find(condTipos)
                                     .exec((err, recetas) => {
                                         if (err) {
@@ -143,7 +143,7 @@ async function descubrir(regex, intolerancias, etiquetas, tipos, orden, from, li
                                             ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
                                             ings = ig.map(el => el.nombre);
                                             for (let i = 0; i < ingRe.length; i++) {
-                                                if (checker(ings, ingRe[i])) {
+                                                if (checker(ingRe[i], ings)) {
                                                     count++;
                                                 }
                                             }
@@ -189,23 +189,22 @@ async function buscarRecetas(regex, intolerancias, etiquetas, tipos, orden, from
                 if (err) {
                     reject('Error al filtrar los ingredientes', err);
                 } else {
-                    Receta.find().and(condicionesTipo)
+                    Receta.find().populate().and(condicionesTipo)
                         .collation({ locale: "en" })
                         .sort(orden)
-                        .skip(from)
-                        .limit(limit)
                         .exec((err, recetas) => {
                             if (err) {
                                 reject('Error al filtrar las recetas', err);
                             } else {
+                                let response = [];
                                 let ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
                                 let ings = ig.map(el => el.nombre);
-                                let response = [];
                                 for (let i = 0; i < ingRe.length; i++) {
                                     if (checker(ingRe[i], ings)) {
                                         response.push(recetas[i]);
                                     }
                                 }
+                                response = response.slice(from, limit);
                                 Receta.find().and(condicionesTipo)
                                     .exec((err, recetas) => {
                                         if (err) {
@@ -215,7 +214,7 @@ async function buscarRecetas(regex, intolerancias, etiquetas, tipos, orden, from
                                             ingRe = recetas.map(el => el.ingredientes.map(el => el.nombre));
                                             ings = ig.map(el => el.nombre);
                                             for (let i = 0; i < ingRe.length; i++) {
-                                                if (checker(ings, ingRe[i])) {
+                                                if (checker(ingRe[i], ings)) {
                                                     count++;
                                                 }
                                             }
